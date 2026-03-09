@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
@@ -12,27 +11,30 @@ const showingNavigationDropdown = ref(false);
 
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav
-                class="border-b border-gray-100 bg-white"
-            >
-                <!-- Primary Navigation Menu -->
+        <div class="min-h-screen bg-futbolix-navy">
+
+            <!-- NAVBAR -->
+            <nav class="border-b border-slate-700 bg-futbolix-dark sticky top-0 z-40">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
+
+                        <!-- Logo + Nav links -->
+                        <div class="flex items-center">
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
+                                <Link :href="route('dashboard')" class="flex items-center gap-2">
+                                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-futbolix-green">
+                                        <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                                            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 1.5a8.5 8.5 0 0 1 5.3 1.85L14.5 8H9.5L6.7 5.35A8.5 8.5 0 0 1 12 3.5zM5.6 6.4 8 8.8v4.4l-3.8 2.8A8.47 8.47 0 0 1 3.5 12c0-2.1.76-4.02 2.1-5.6zm.9 10.3 3.5-2.6h4l3.5 2.6A8.49 8.49 0 0 1 12 20.5a8.49 8.49 0 0 1-5.5-3.8zm11.9-.5-3.8-2.8V8.8l2.4-2.4A8.48 8.48 0 0 1 20.5 12c0 1.56-.42 3.01-1.1 4.2z"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-lg font-bold text-white">
+                                        Futbo<span class="text-futbolix-green">lix</span>
+                                    </span>
                                 </Link>
                             </div>
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
+                            <div class="hidden space-x-1 sm:ms-8 sm:flex">
                                 <NavLink
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
@@ -42,88 +44,53 @@ const showingNavigationDropdown = ref(false);
                             </div>
                         </div>
 
+                        <!-- User dropdown -->
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <!-- Settings Dropdown -->
                             <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                class="inline-flex items-center gap-2 rounded-md border border-slate-600 bg-futbolix-navy px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-futbolix-green hover:text-white focus:outline-none"
                                             >
+                                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-futbolix-green text-xs font-bold text-white">
+                                                    {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
+                                                </div>
                                                 {{ $page.props.auth.user.name }}
-
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
+                                                <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                                                 </svg>
                                             </button>
                                         </span>
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
+                                        <DropdownLink :href="route('profile.edit')">
+                                            Perfil
                                         </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
+                                        <DropdownLink :href="route('logout')" method="post" as="button">
+                                            Cerrar sesión
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
                             </div>
                         </div>
 
-                        <!-- Hamburger -->
+                        <!-- Hamburger (móvil) -->
                         <div class="-me-2 flex items-center sm:hidden">
                             <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                @click="showingNavigationDropdown = !showingNavigationDropdown"
+                                class="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition hover:bg-slate-700 hover:text-white focus:outline-none"
                             >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
+                                        :class="{ hidden: showingNavigationDropdown, 'inline-flex': !showingNavigationDropdown }"
+                                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"
                                     />
                                     <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
+                                        :class="{ hidden: !showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }"
+                                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"
                                     />
                                 </svg>
                             </button>
@@ -131,60 +98,38 @@ const showingNavigationDropdown = ref(false);
                     </div>
                 </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
-                >
+                <!-- Menú responsivo -->
+                <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
                     <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
-                        >
+                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
                     </div>
 
-                    <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4"
-                    >
+                    <div class="border-t border-slate-700 pb-1 pt-4">
                         <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800"
-                            >
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
+                            <div class="flex items-center gap-2">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-futbolix-green text-sm font-bold text-white">
+                                    {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-white">{{ $page.props.auth.user.name }}</div>
+                                    <div class="text-xs text-slate-400">{{ $page.props.auth.user.email }}</div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
+                            <ResponsiveNavLink :href="route('profile.edit')">Perfil</ResponsiveNavLink>
+                            <ResponsiveNavLink :href="route('logout')" method="post" as="button">Cerrar sesión</ResponsiveNavLink>
                         </div>
                     </div>
                 </div>
             </nav>
 
             <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <header class="border-b border-slate-700 bg-futbolix-dark" v-if="$slots.header">
+                <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
                     <slot name="header" />
                 </div>
             </header>

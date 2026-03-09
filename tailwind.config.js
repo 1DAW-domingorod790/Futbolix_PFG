@@ -15,6 +15,17 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                futbolix: {
+                    green:   '#16a34a',
+                    'green-dark': '#15803d',
+                    'green-light': '#22c55e',
+                    navy:    '#0f172a',
+                    dark:    '#1e293b',
+                    gold:    '#f59e0b',
+                    'gold-light': '#fbbf24',
+                },
+            },
         },
     },
 
