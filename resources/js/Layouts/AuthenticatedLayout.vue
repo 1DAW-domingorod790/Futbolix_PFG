@@ -5,7 +5,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
-import ApplicationLogoIcon from '@/Components/ApplicationLogoIcon.vue';
+import ApplicationLogoIconWhite from '@/Components/AplicationLogoIconWhite.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -25,7 +25,8 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex items-center">
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')" class="flex items-center gap-2">
-                                    <ApplicationLogoIcon style="width: 30%;" />
+                                    <!-- <ApplicationLogoIcon style="width: 25%;" /> -->
+                                    <ApplicationLogoIconWhite />
                                     <h1 class="text-xl font-bold text-white" style="font-size: x-large;">Futbolix</h1>
                                 </Link>
                             </div>
