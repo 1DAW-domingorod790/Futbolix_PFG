@@ -35,7 +35,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
+const dashboard = () => '/dashboard';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -154,7 +154,7 @@ const rightNavItems: NavItem[] = [
                 <div class="hidden h-full lg:flex lg:flex-1">
                     <NavigationMenu class="ml-10 flex h-full items-stretch">
                         <NavigationMenuList
-                            class="flex h-full items-stretch space-x-2"
+                            class="flex h-full items-stretch space-x-2 bg-red-500"
                         >
                             <NavigationMenuItem
                                 v-for="(item, index) in mainNavItems"

@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'admin@admin',
+            'password' => 'admin',
+            'avatar_path' => 'https://api.dicebear.com/9.x/micah/svg?seed=Domingo%202&backgroundColor=23ca35,003b8c&backgroundType=gradientLinear&glassesProbability=50'
         ]);
     }
 }
