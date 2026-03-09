@@ -5,6 +5,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import ApplicationLogoIcon from '@/Components/ApplicationLogoIcon.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -24,15 +25,8 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex items-center">
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')" class="flex items-center gap-2">
-                                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-futbolix-green">
-                                        <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                                            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 1.5a8.5 8.5 0 0 1 5.3 1.85L14.5 8H9.5L6.7 5.35A8.5 8.5 0 0 1 12 3.5zM5.6 6.4 8 8.8v4.4l-3.8 2.8A8.47 8.47 0 0 1 3.5 12c0-2.1.76-4.02 2.1-5.6zm.9 10.3 3.5-2.6h4l3.5 2.6A8.49 8.49 0 0 1 12 20.5a8.49 8.49 0 0 1-5.5-3.8zm11.9-.5-3.8-2.8V8.8l2.4-2.4A8.48 8.48 0 0 1 20.5 12c0 1.56-.42 3.01-1.1 4.2z"/>
-                                        </svg>
-                                    </div>
-                                    <span class="text-lg font-bold text-white">
-                                        Futbo<span class="text-futbolix-green">lix</span>
-                                    </span>
+                                    <ApplicationLogoIcon style="width: 30%;" />
+                                    <h1 class="text-xl font-bold text-white" style="font-size: x-large;">Futbolix</h1>
                                 </Link>
                             </div>
 
