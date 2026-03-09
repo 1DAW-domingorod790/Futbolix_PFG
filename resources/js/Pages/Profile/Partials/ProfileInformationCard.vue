@@ -10,7 +10,7 @@ const user = usePage().props.auth.user;
         <div class="relative">
             <div class="h-50 w-50 overflow-hidden rounded-2xl ring-4 ring-green-100 shadow-lg">
                 <img
-                    :src="user.avatar_path"
+                    :src="user.avatar_url"
                     :alt="user.name"
                     class="h-full w-full object-cover"
                 />

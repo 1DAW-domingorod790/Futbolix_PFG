@@ -53,7 +53,7 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center rounded-md border border-transparent px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                <img :src="$page.props.auth.user.avatar_path" alt="" class="w-10 h-10 rounded-full">
+                                                <img :src="$page.props.auth.user.avatar_url" alt="" class="w-10 h-10 rounded-full">
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"

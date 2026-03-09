@@ -12,11 +12,14 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    avatar_path: '',
 });
 
 const submit = () => {
     form.post(route('register'), {
+        preserveScroll: true,
         onFinish: () => form.reset('password', 'password_confirmation'),
+        forceFormData: true,
     });
 };
 </script>
@@ -94,7 +97,14 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <FileInput />
+                <FileInput 
+                    v-model="form.avatar_path"
+                />
+
+                <InputError
+                    class="mt-2"
+                    :message="form.errors.avatar_path"
+                />
             </div>
 
             <div class="mt-4 flex items-center justify-end">
