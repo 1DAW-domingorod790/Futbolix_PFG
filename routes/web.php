@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
+use App\Http\Controllers\Settings\ProfileController as SettingsProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,6 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/settings/profile', [SettingsProfileController::class, 'edit'])->name('settings.profile.edit');
+    Route::patch('/settings/profile', [SettingsProfileController::class, 'update'])->name('settings.profile.update');
+    Route::delete('/settings/profile', [SettingsProfileController::class, 'destroy'])->name('settings.profile.destroy');
+
+    Route::get('/settings/password', [SettingsPasswordController::class, 'edit'])->name('settings.password.edit');
+    Route::put('/settings/password', [SettingsPasswordController::class, 'update'])->name('settings.password.update');
 });
 
 require __DIR__.'/auth.php';
