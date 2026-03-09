@@ -3,7 +3,9 @@ import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col items-center justify-center bg-futbolix-navy px-4">
+    <div 
+    class="flex min-h-screen flex-col items-center justify-center bg-futbolix-navy px-4"
+    style="background: linear-gradient(180deg, #003B8C 0%, #00142F 50%);">
 
         <!-- Logo -->
         <div class="mb-8 text-center">

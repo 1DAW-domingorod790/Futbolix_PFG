@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar_path',
     ];
 
     /**
@@ -49,4 +51,20 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute()
+    {
+        if (!$this->avatar_path) {
+            return null;
+        }
+
+        if (str_starts_with($this->avatar_path, 'http')) {
+            return $this->avatar_path;
+        }
+
+        return Storage::url($this->avatar_path);
+    }
 }
+

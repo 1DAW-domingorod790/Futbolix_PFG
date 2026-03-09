@@ -48,15 +48,18 @@ const updatePassword = () => {
 
         <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
             <div>
-                <InputLabel for="current_password" value="Current Password" />
+                <InputLabel for="current_password" value="Current Password" 
+                    style="color:black"
+                />
 
                 <TextInput
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100"
                     autocomplete="current-password"
+                    style="color:black"
                 />
 
                 <InputError
@@ -66,15 +69,18 @@ const updatePassword = () => {
             </div>
 
             <div>
-                <InputLabel for="password" value="New Password" />
+                <InputLabel for="password" value="New Password" 
+                    style="color:black"
+                />
 
                 <TextInput
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100"
                     autocomplete="new-password"
+                    style="color:black"
                 />
 
                 <InputError :message="form.errors.password" class="mt-2" />
@@ -84,14 +90,16 @@ const updatePassword = () => {
                 <InputLabel
                     for="password_confirmation"
                     value="Confirm Password"
+                    style="color: black;"
                 />
 
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100mt-1 block w-full"
                     autocomplete="new-password"
+                    style="color:black"
                 />
 
                 <InputError
