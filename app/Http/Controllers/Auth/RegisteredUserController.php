@@ -35,6 +35,7 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'avatar_path' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
+            'captcha' => 'required|captcha',
         ]);
 
         // dd($request->all());
