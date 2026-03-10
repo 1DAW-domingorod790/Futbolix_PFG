@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
 use App\Http\Controllers\Settings\ProfileController as SettingsProfileController;
@@ -19,6 +20,12 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::patch('/admin/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

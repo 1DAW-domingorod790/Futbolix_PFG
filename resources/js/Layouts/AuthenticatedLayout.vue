@@ -41,6 +41,13 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    v-if="$page.props.auth.user.role === 'admin'"
+                                    :href="route('admin.users')"
+                                    :active="route().current('admin.users')"
+                                >
+                                    Gestión de usuarios
+                                </NavLink>
                             </div>
                         </div>
 
