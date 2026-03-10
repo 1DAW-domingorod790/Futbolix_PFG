@@ -6,16 +6,29 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+import { ref } from 'vue';
+
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+    captcha: '',
 });
+
+const captchaUrl = ref('/captcha?' + Date.now());
+
+const refreshCaptcha = () => {
+    captchaUrl.value = '/captcha?' + Date.now();
+    form.captcha = '';
+};
 
 const submit = () => {
     form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
+        onFinish: () => {
+            form.reset('password', 'password_confirmation', 'captcha');
+            refreshCaptcha();
+        },
     });
 };
 </script>
@@ -92,10 +105,26 @@ const submit = () => {
                 />
             </div>
 
+            <div class="mt-4">
+                <InputLabel for="captcha" value="Verification Code" />
+                <div class="flex items-center gap-3 mt-1">
+                    <img :src="captchaUrl" alt="captcha" class="h-12 rounded cursor-pointer" @click="refreshCaptcha" title="Click to refresh" />
+                    <TextInput
+                        id="captcha"
+                        type="text"
+                        class="block w-full"
+                        v-model="form.captcha"
+                        required
+                        placeholder="Enter the code"
+                    />
+                </div>
+                <InputError class="mt-2" :message="form.errors.captcha" />
+            </div>
+
             <div class="mt-4 flex items-center justify-end">
                 <Link
                     :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-md text-sm text-slate-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-futbolix-green focus:ring-offset-2 transition"
                 >
                     Already registered?
                 </Link>
