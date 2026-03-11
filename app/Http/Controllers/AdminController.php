@@ -10,6 +10,40 @@ use Inertia\Inertia;
 
 class AdminController extends Controller
 {
+
+    public function store(Request $request)
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'avatar_path' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
+            'role_name' => 'required|in:user,admin',
+        ]);
+
+        $avatarPath = $request->file('avatar_path') 
+            ? $request->file('avatar_path')->store('avatars', 'public')
+            : null;
+
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'role_id' => Role::where('name', $request->role_name)->value('id'),
+            'avatar_path' => $avatarPath ?? "https://api.dicebear.com/9.x/micah/svg" 
+                . "?seed=". urlencode($request->name ?? 'User')
+                . "&backgroundColor=" . str_pad(dechex(mt_rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT) . "," .  str_pad(dechex(mt_rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT)
+                . "&backgroundType=gradientLinear"
+                . "&glassesProbability=50" 
+        ]);
+
+        return back();
+    }
+
     public function users()
     {
         if (!Auth::user()->isAdmin()) {
