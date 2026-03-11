@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'password' => 'admin',
+            'avatar_path' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW0urA9Fc1ilMIytV0ofKkICyMqXMcTVutwA&s'
         ]);
     }
 }

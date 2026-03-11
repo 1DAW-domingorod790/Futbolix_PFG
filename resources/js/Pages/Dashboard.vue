@@ -1,5 +1,7 @@
 <script setup>
+import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Link } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 </script>
 
@@ -19,9 +21,7 @@ import { Head } from '@inertiajs/vue3';
                 <!-- Bienvenida -->
                 <div class="mb-8 rounded-2xl border border-slate-700 bg-futbolix-dark p-6">
                     <div class="flex items-center gap-4">
-                        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-futbolix-green text-xl font-bold text-white shadow-lg shadow-futbolix-green/30">
-                            {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
-                        </div>
+                        <ApplicationLogoIconWhite />
                         <div>
                             <h3 class="text-lg font-semibold text-white">
                                 ¡Bienvenido, {{ $page.props.auth.user.name }}!
@@ -67,6 +67,21 @@ import { Head } from '@inertiajs/vue3';
                         <h4 class="mb-1 font-semibold text-white">Mi perfil</h4>
                         <p class="text-sm text-slate-400">Edita tu información personal y ajusta tu cuenta.</p>
                     </div>
+
+                    <Link
+                        v-if="$page.props.auth.user.role === 'admin'"
+                        :href="route('admin.users')"
+                        class="card-sport p-6 block hover:border-futbolix-green transition"
+                    >
+                        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+                            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="mb-1 font-semibold text-white">Gestión de usuarios</h4>
+                        <p class="text-sm text-slate-400">Administra todos los usuarios registrados.</p>
+                    </Link>
                 </div>
 
             </div>

@@ -5,7 +5,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
-import ApplicationLogoIconWhite from '@/Components/AplicationLogoIconWhite.vue';
+import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -37,6 +37,13 @@ const showingNavigationDropdown = ref(false);
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    v-if="$page.props.auth.user.role === 'admin'"
+                                    :href="route('admin.users')"
+                                    :active="route().current('admin.users')"
+                                >
+                                    Gestión de usuarios
                                 </NavLink>
                             </div>
                         </div>
@@ -105,9 +112,7 @@ const showingNavigationDropdown = ref(false);
                     <div class="border-t border-slate-700 pb-1 pt-4">
                         <div class="px-4">
                             <div class="flex items-center gap-2">
-                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-futbolix-green text-sm font-bold text-white">
-                                    {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
-                                </div>
+                                <img :src="$page.props.auth.user.avatar_url" class="w-10 h-10 rounded-full">
                                 <div>
                                     <div class="text-sm font-medium text-white">{{ $page.props.auth.user.name }}</div>
                                     <div class="text-xs text-slate-400">{{ $page.props.auth.user.email }}</div>
