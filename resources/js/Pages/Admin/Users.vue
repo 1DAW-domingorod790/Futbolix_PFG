@@ -8,13 +8,13 @@ defineProps({
 });
 
 const editingUser = ref(null);
-const form = useForm({ name: '', email: '', role: 'user' });
+const form = useForm({ name: '', email: '', role_name: 'user'});
 
 function openEdit(user) {
     editingUser.value = user;
     form.name = user.name;
     form.email = user.email;
-    form.role = user.role;
+    form.role_name = user.role.name;
 }
 
 function closeEdit() {
@@ -65,12 +65,12 @@ function deleteUser(user) {
                             <td class="px-6 py-4 text-center">{{ user.email }}</td>
                             <td class="px-6 py-4 text-center">
                                 <span
-                                    :class="user.role === 'admin'
+                                    :class="user.role.name === 'admin'
                                         ? 'bg-futbolix-green/20 text-futbolix-green'
                                         : 'bg-slate-700 text-slate-300'"
                                     class="rounded-full px-3 py-1 text-xs font-semibold"
                                 >
-                                    {{ user.role === 'admin' ? 'Admin' : 'Usuario' }}
+                                    {{ user.role.name }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-slate-500 text-center">
@@ -129,7 +129,7 @@ function deleteUser(user) {
                     <div>
                         <label class="mb-1 block text-sm text-slate-400">Rol</label>
                         <select
-                            v-model="form.role"
+                            v-model="form.role_name"
                             class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-futbolix-green focus:outline-none"
                         >
                             <option value="user">Usuario</option>

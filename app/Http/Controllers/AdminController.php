@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +17,9 @@ class AdminController extends Controller
         }
 
         return Inertia::render('Admin/Users', [
-            'users' => User::select('id', 'name', 'email', 'role', 'created_at')->get(),
+            'users' => User::with('role:id,name')
+                    ->select('id', 'name', 'email', 'role_id', 'created_at')
+                    ->get(),
         ]);
     }
 
@@ -29,10 +32,15 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:user,admin',
+            'role_name' => 'required|in:user,admin',
         ]);
 
-        $user->update($request->only('name', 'email', 'role'));
+        $request->merge([
+            'role_id' => Role::where('name', $request->role_name)->value('id')
+        ]);
+
+
+        $user->update($request->only('name', 'email', 'role_id'));
 
         return back();
     }

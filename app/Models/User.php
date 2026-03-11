@@ -23,6 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'role_id',
         'password',
         'avatar_path'
     ];
@@ -39,7 +40,7 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role && $this->role->name === Role::ADMIN;
+        return $this->role_id == Role::ADMIN;
     }
 
     public function role()

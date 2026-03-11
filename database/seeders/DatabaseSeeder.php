@@ -20,14 +20,14 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'role_id' => 1,
-            'email' => 'admin',
+            'email' => 'admin@admin',
             'password' => 'admin',
             'avatar_path' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW0urA9Fc1ilMIytV0ofKkICyMqXMcTVutwA&s'
         ]);
 
         User::factory()->create([
             'name' => 'Usuario',
-            'email' => 'user',
+            'email' => 'user@user',
             'password' => 'user',
             'avatar_path' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW0urA9Fc1ilMIytV0ofKkICyMqXMcTVutwA&s'
         ]);
