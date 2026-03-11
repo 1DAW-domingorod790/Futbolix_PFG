@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Role;
 
 class User extends Authenticatable
 {
@@ -22,14 +23,29 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'role_id',
         'password',
-        'avatar_path',
-        'role',
+        'avatar_path'
     ];
+
+    protected static function booted()
+    {
+
+        static::creating(function ($user) {
+            if (!$user->role_id){
+                $user->role_id = Role::where('name', 'user')->first()->id;
+            }
+        });
+    }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role_id == Role::ADMIN;
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 
     /**
