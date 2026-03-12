@@ -12,7 +12,7 @@ import ApplicationLogoIcon from '@/Components/ApplicationLogoIcon.vue';
         <!-- Logo -->
         <div class="mb-8 text-center">
             <Link href="/" class="inline-flex flex-col items-center gap-2">
-                <ApplicationLogoIcon class="w-100" />
+                <ApplicationLogoIcon />
                 <h1 class="text-xl font-bold text-white" style="font-size: xx-large;">Futbolix</h1>
             </Link>
 
