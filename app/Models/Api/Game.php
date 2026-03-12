@@ -7,9 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Game extends Model
 {
     protected $fillable = [
-        'external_id', 'home_team', 'home_team_logo', 
-        'away_team', 'away_team_logo', 'home_score', 
-        'away_score', 'utc_date', 'status'
+        'external_id',
+        'competition_id',
+        'home_team_id',
+        'away_team_id',
+        'home_score',
+        'away_score',
+        'utc_date',
+        'status',
     ];
 
     protected $casts = [

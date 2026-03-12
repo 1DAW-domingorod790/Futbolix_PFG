@@ -6,8 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    
-    protected $fillable = ['external_id', 'name', 'short_name', 'tla', 'crest', 'founded', 'lastUpdated', 'venue'];    
+    protected $fillable = [
+        'external_id',
+        'name',
+        'shortname',
+        'tla',
+        'crest',
+        'founded',
+        'lastUpdated',
+        'venue',
+    ];
+
+    protected $casts = [
+        'lastUpdated' => 'datetime',
+    ];
 
     public function competitions()
     {
