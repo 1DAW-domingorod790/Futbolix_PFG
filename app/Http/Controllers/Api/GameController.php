@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
 use App\Models\Api\Game;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
@@ -12,8 +13,11 @@ class GameController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Matches/Index', [
-            'games' => Game::all(),
+        return Inertia::render('Api/Games', [
+            'games' => Game::query()
+                ->with(['competition', 'homeTeam', 'awayTeam'])
+                ->orderBy('utc_date')
+                ->get(),
         ]);
     }
 
