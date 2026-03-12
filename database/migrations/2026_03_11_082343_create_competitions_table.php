@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('startDate')->nullable();
             $table->date('endDate')->nullable();
             $table->integer('currentMatchDay')->nullable();
+            $table->timestamp('lastUpdated')->nullable();
             $table->timestamps();
         });
     }

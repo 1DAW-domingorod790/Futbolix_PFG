@@ -1,12 +1,26 @@
 <?php
 
-namespace App\Models\Models\Api;
+namespace App\Models\Api;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
 {
-    //
+    protected $fillable = [
+        'external_id',
+        'name',
+        'shortname',
+        'tla',
+        'crest',
+        'founded',
+        'lastUpdated',
+        'venue',
+    ];
+
+    protected $casts = [
+        'lastUpdated' => 'datetime',
+    ];
+
     public function competitions()
     {
         return $this->belongsToMany(Competition::class);
