@@ -191,7 +191,7 @@ function gameStatus(game: any) {
             <div class="mx-auto w-full max-w-7xl">
                 <section class="rounded-[2rem] border-4 border-[#083b8d] bg-[#eef1f5] p-4 shadow-[0_18px_45px_rgba(8,59,141,0.18)] lg:p-6">
                     <div class="rounded-[1.75rem] p-3 lg:p-6">
-                        <div class="mb-6 flex items-center gap-3 rounded-2xl bg-[#ffd400] px-4 py-3 shadow-[0_8px_20px_rgba(160,130,0,0.2)] lg:mx-auto lg:max-w-2xl lg:px-6 lg:py-4 sticky top-20 z-10 border border-3">
+                        <div class="mb-6 flex items-center gap-3 rounded-2xl bg-[#ffd400] px-4 py-3 shadow-[0_8px_20px_rgba(160,130,0,0.2)] lg:mx-auto lg:max-w-2xl lg:px-6 lg:py-4 sticky top-20 z-10 border border-2">
                             <button
                                 type="button"
                                 class="flex h-10 w-10 items-center justify-center rounded-full text-3xl font-black text-black transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40 lg:h-12 lg:w-12"
@@ -203,7 +203,7 @@ function gameStatus(game: any) {
                                     <polyline points="12 19 5 12 12 5"></polyline>
                                 </svg>
                             </button>
-                            <div class="flex-1 text-center text-2xl font-black text-black lg:text-4xl">
+                            <div class="flex-1 text-center text-2xl font-black text-black font-semibold lg:text-4xl">
                                 {{ currentDayLabel }}
                             </div>
                             <button
@@ -281,14 +281,14 @@ function gameStatus(game: any) {
                                             </div>
 
                                             <div class="flex min-w-0 items-center justify-end gap-3 text-right">
-                                                <p class="order-2 line-clamp-2 text-sm font-bold leading-tight lg:order-1 lg:text-base">
+                                                <p class="order-1 line-clamp-2 text-sm font-bold leading-tight lg:order-1 lg:text-base">
                                                     {{ teamName(game.away_team || game.awayTeam, 'Visitante') }}
                                                 </p>
                                                 <img
                                                     v-if="game.away_team?.crest || game.awayTeam?.crest"
                                                     :src="game.away_team?.crest || game.awayTeam?.crest"
                                                     :alt="teamName(game.away_team || game.awayTeam, 'Visitante')"
-                                                    class="order-1 h-12 w-12 shrink-0 object-contain lg:order-2 lg:h-14 lg:w-14"
+                                                    class="order-2 h-12 w-12 shrink-0 object-contain lg:order-2 lg:h-14 lg:w-14"
                                                 >
                                             </div>
                                         </div>
