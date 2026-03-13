@@ -9,14 +9,15 @@ use Illuminate\Support\Facades\Http;
 
 class SyncTeams extends Command
 {
-    private array $competitionIds = [
-        2014,
-        2019,
-        2002,
-        2015,
-        2021,
+    public array $competitionIds = [
+        2014, // LaLiga
+        2021, // Premier League
+        2019, // Serie A
+        2002, // Bundesliga
+        2015, // Ligue 1
+        2000, // FIFA World Cup
+        2001, // UEFA Champions League
     ];
-
     /**
      * The name and signature of the console command.
      *
