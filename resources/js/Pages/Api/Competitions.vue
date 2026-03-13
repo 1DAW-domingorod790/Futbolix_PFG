@@ -1,123 +1,266 @@
-<script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+<script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-const props = defineProps({
-    competitions: {
-        type: Array,
-        default: () => [],
-    },
-});
+type Competition = {
+    id: number | string;
+    external_id?: number | string | null;
+    name?: string | null;
+    code?: string | null;
+    type?: string | null;
+    emblem?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    currentMatchDay?: number | null;
+    lastUpdated?: string | null;
+};
 
-const totalCompetitions = computed(() => props.competitions.length);
-const competitionsWithMatchday = computed(() => props.competitions.filter((competition) => competition.currentMatchDay).length);
-const competitionsWithDates = computed(() => props.competitions.filter((competition) => competition.startDate || competition.endDate).length);
+const props = defineProps<{
+    competitions: Competition[];
+}>();
 
-function formatDate(date) {
+const normalizedCompetitions = computed(() =>
+    [...(props.competitions ?? [])].sort((a, b) => {
+        const hasMatchdayA = a.currentMatchDay ? 1 : 0;
+        const hasMatchdayB = b.currentMatchDay ? 1 : 0;
+
+        if (hasMatchdayA !== hasMatchdayB) {
+            return hasMatchdayB - hasMatchdayA;
+        }
+
+        return (a.name ?? '').localeCompare(b.name ?? '', 'es');
+    }),
+);
+
+const nationalCompetitionIds = [2014, 2021, 2019, 2015, 2002];
+const internationalCompetitionIds = [2000, 2001];
+
+const nationalCompetitions = computed(() =>
+    nationalCompetitionIds
+        .map((competitionId) =>
+            normalizedCompetitions.value.find(
+                (competition) => Number(competition.external_id) === competitionId,
+            ),
+        )
+        .filter(Boolean) as Competition[],
+);
+
+const internationalCompetitions = computed(() =>
+    internationalCompetitionIds
+        .map((competitionId) =>
+            normalizedCompetitions.value.find(
+                (competition) => Number(competition.external_id) === competitionId,
+            ),
+        )
+        .filter(Boolean) as Competition[],
+);
+
+function formatDate(date?: string | null) {
     if (!date) {
-        return 'Sin fecha';
+        return 'Pendiente';
     }
 
-    return new Date(date).toLocaleDateString('es-ES');
+    return new Date(date).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+}
+
+function competitionInitials(name?: string | null) {
+    if (!name) {
+        return 'CP';
+    }
+
+    return name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase();
+}
+
+function competitionTypeLabel(type?: string | null) {
+    if (!type) {
+        return 'Formato sin definir';
+    }
+
+    if (type === 'LEAGUE') {
+        return 'Liga';
+    }
+
+    if (type === 'CUP') {
+        return 'Copa';
+    }
+
+    return type;
 }
 </script>
 
 <template>
     <Head title="Competiciones" />
 
-    <AuthenticatedLayout>
-        <template #header>
+    <AuthenticatedLayout >
+       <template #header>
             <h2 class="text-xl font-semibold leading-tight text-white">
                 Competiciones
             </h2>
+            <p class="text-sm font-semibold text-white/75">
+                Aquí encontrarás información actualizada sobre ligas nacionales e internacionales, incluyendo detalles como la jornada actual y la fecha de finalización.
+            </p>
         </template>
 
-        <div class="py-10">
-            <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-                <section class="rounded-2xl border border-slate-700 bg-futbolix-dark p-6">
-                    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                        <div class="max-w-2xl">
-                            <p class="text-sm font-medium uppercase tracking-[0.2em] text-futbolix-green">
-                                API futbol
-                            </p>
-                            <h1 class="mt-2 text-3xl font-bold text-white">
-                                Competiciones disponibles
-                            </h1>
-                            <p class="mt-3 text-sm text-slate-400">
-                                Vista rápida de las ligas y torneos almacenados en la aplicación.
-                            </p>
-                        </div>
+        <div class="bg-[radial-gradient(circle_at_top,#f7f9fc_0%,#dce4ef_45%,#c7d3e6_100%)] px-4 py-5 lg:px-6 lg:py-6">
+            <div class="mx-auto w-full max-w-[1500px]">
+                <section class="rounded-[2rem] border-4 border-[#083b8d] bg-[#eef1f5] p-3 shadow-[0_18px_45px_rgba(8,59,141,0.18)] lg:p-4 mt-4">
+                    <div class="rounded-[1.75rem] p-2 lg:p-3">
+                        <div
+                            v-if="nationalCompetitions.length || internationalCompetitions.length"
+                            class="space-y-5"
+                        >
+                            <section
+                                v-if="nationalCompetitions.length"
+                                class="space-y-3"
+                            >
+                                <h3 class="px-1 text-lg font-black uppercase tracking-wide text-[#00357b]">
+                                    Ligas nacionales:
+                                </h3>
 
-                        <div class="grid gap-3 sm:grid-cols-3">
-                            <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
-                                <p class="text-xs uppercase tracking-wide text-slate-400">Total</p>
-                                <p class="mt-2 text-2xl font-semibold text-white">{{ totalCompetitions }}</p>
-                            </div>
-                            <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
-                                <p class="text-xs uppercase tracking-wide text-slate-400">Con jornada</p>
-                                <p class="mt-2 text-2xl font-semibold text-white">{{ competitionsWithMatchday }}</p>
-                            </div>
-                            <div class="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
-                                <p class="text-xs uppercase tracking-wide text-slate-400">Con fechas</p>
-                                <p class="mt-2 text-2xl font-semibold text-white">{{ competitionsWithDates }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                                    <article
+                                        v-for="competition in nationalCompetitions"
+                                        :key="competition.id"
+                                        class="overflow-hidden rounded-2xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_8px_18px_rgba(3,34,82,0.3)]"
+                                    >
+                                        <div class="border-b border-[#0c4ea9] px-3 py-3 text-white">
+                                            <div class="flex items-start gap-2.5">
+                                                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/95 p-1 lg:h-11 lg:w-11">
+                                                    <img
+                                                        v-if="competition.emblem"
+                                                        :src="competition.emblem"
+                                                        :alt="competition.name || 'Competición'"
+                                                        class="h-full w-full object-contain"
+                                                    >
+                                                    <span
+                                                        v-else
+                                                        class="text-sm font-black text-[#00357b]"
+                                                    >
+                                                        {{ competitionInitials(competition.name) }}
+                                                    </span>
+                                                </div>
 
-                <section class="overflow-hidden rounded-2xl border border-slate-700 bg-futbolix-dark">
-                    <div class="border-b border-slate-700 px-6 py-4">
-                        <h3 class="text-lg font-semibold text-white">Listado</h3>
-                    </div>
-
-                    <div v-if="competitions.length" class="overflow-x-auto">
-                        <table class="min-w-full text-left text-sm text-slate-300">
-                            <thead class="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
-                                <tr>
-                                    <th class="px-6 py-4">Competición</th>
-                                    <th class="px-6 py-4">Código</th>
-                                    <th class="px-6 py-4">Tipo</th>
-                                    <th class="px-6 py-4">Jornada actual</th>
-                                    <th class="px-6 py-4">Fechas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr
-                                    v-for="competition in competitions"
-                                    :key="competition.id"
-                                    class="border-t border-slate-700 transition hover:bg-slate-900/50"
-                                >
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <img
-                                                v-if="competition.emblem"
-                                                :src="competition.emblem"
-                                                :alt="competition.name"
-                                                class="h-10 w-10 rounded-full bg-white object-contain p-1"
-                                            />
-                                            <div>
-                                                <p class="font-medium text-white">{{ competition.name }}</p>
-                                                <p class="text-xs text-slate-500">ID externo: {{ competition.external_id }}</p>
+                                                <div class="min-w-0">
+                                                    <h3 class="line-clamp-2 text-sm font-black leading-tight text-white lg:text-base">
+                                                        {{ competition.name || 'Competición sin nombre' }}
+                                                    </h3>
+                                                    <p class="mt-1 text-[11px] font-semibold uppercase tracking-wide text-[#d8e7ff]">
+                                                        {{ competition.code || 'Sin código' }} · {{ competitionTypeLabel(competition.type) }}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4">{{ competition.code || 'N/D' }}</td>
-                                    <td class="px-6 py-4">{{ competition.type || 'N/D' }}</td>
-                                    <td class="px-6 py-4">{{ competition.currentMatchDay || 'N/D' }}</td>
-                                    <td class="px-6 py-4">
-                                        {{ formatDate(competition.startDate) }} - {{ formatDate(competition.endDate) }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
 
-                    <div v-else class="px-6 py-12 text-center text-sm text-slate-400">
-                        No hay competiciones disponibles.
+                                        <div class="grid gap-2 p-2.5">
+                                            <article class="rounded-xl border border-[#5ca1ff] bg-[#0051b2] px-3 py-3 text-white">
+                                                <p class="text-[10px] font-black uppercase tracking-[0.14em] text-[#d8e7ff]">
+                                                    Jornada actual
+                                                </p>
+                                                <p class="mt-1.5 text-xl font-black">
+                                                    {{ competition.currentMatchDay || 'N/D' }}
+                                                </p>
+                                            </article>
+
+                                            <article class="rounded-xl border border-[#5ca1ff] bg-[#0051b2] px-3 py-3 text-white">
+                                                <p class="text-[10px] font-black uppercase tracking-[0.14em] text-[#d8e7ff]">
+                                                    Fecha de finalización
+                                                </p>
+                                                <p class="mt-1.5 text-sm font-bold leading-snug">
+                                                    {{ formatDate(competition.endDate) }}
+                                                </p>
+                                            </article>
+                                        </div>
+                                    </article>
+                                </div>
+                            </section>
+
+                            <section
+                                v-if="internationalCompetitions.length"
+                                class="space-y-3"
+                            >
+                                <h3 class="px-1 text-lg font-black uppercase tracking-wide text-[#00357b]">
+                                    Competiciones internacionales:
+                                </h3>
+
+                                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                                    <article
+                                        v-for="competition in internationalCompetitions"
+                                        :key="competition.id"
+                                        class="overflow-hidden rounded-2xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_8px_18px_rgba(3,34,82,0.3)]"
+                                    >
+                                        <div class="border-b border-[#0c4ea9] px-3 py-3 text-white">
+                                            <div class="flex items-start gap-2.5">
+                                                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/95 p-1 lg:h-11 lg:w-11">
+                                                    <img
+                                                        v-if="competition.emblem"
+                                                        :src="competition.emblem"
+                                                        :alt="competition.name || 'Competición'"
+                                                        class="h-full w-full object-contain"
+                                                    >
+                                                    <span
+                                                        v-else
+                                                        class="text-sm font-black text-[#00357b]"
+                                                    >
+                                                        {{ competitionInitials(competition.name) }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="min-w-0">
+                                                    <h3 class="line-clamp-2 text-sm font-black leading-tight text-white lg:text-base">
+                                                        {{ competition.name || 'Competición sin nombre' }}
+                                                    </h3>
+                                                    <p class="mt-1 text-[11px] font-semibold uppercase tracking-wide text-[#d8e7ff]">
+                                                        {{ competition.code || 'Sin código' }} · {{ competitionTypeLabel(competition.type) }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid gap-2 p-2.5">
+                                            <article class="rounded-xl border border-[#5ca1ff] bg-[#0051b2] px-3 py-3 text-white">
+                                                <p class="text-[10px] font-black uppercase tracking-[0.14em] text-[#d8e7ff]">
+                                                    Jornada actual
+                                                </p>
+                                                <p class="mt-1.5 text-xl font-black">
+                                                    {{ competition.currentMatchDay || 'N/D' }}
+                                                </p>
+                                            </article>
+
+                                            <article class="rounded-xl border border-[#5ca1ff] bg-[#0051b2] px-3 py-3 text-white">
+                                                <p class="text-[10px] font-black uppercase tracking-[0.14em] text-[#d8e7ff]">
+                                                    Fecha de finalización
+                                                </p>
+                                                <p class="mt-1.5 text-sm font-bold leading-snug">
+                                                    {{ formatDate(competition.endDate) }}
+                                                </p>
+                                            </article>
+                                        </div>
+                                    </article>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div
+                            v-else
+                            class="rounded-2xl border-2 border-dashed border-[#0c4ea9] bg-white/60 px-6 py-12 text-center text-sm font-medium text-[#00357b]"
+                        >
+                            No hay competiciones disponibles para mostrar.
+                        </div>
                     </div>
                 </section>
             </div>
+            <br><br>
         </div>
     </AuthenticatedLayout>
 </template>

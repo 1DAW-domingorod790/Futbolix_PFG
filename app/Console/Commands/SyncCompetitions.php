@@ -28,6 +28,8 @@ class SyncCompetitions extends Command
         2019, // Serie A
         2002, // Bundesliga
         2015, // Ligue 1
+        2000, // FIFA World Cup
+        2001, // UEFA Champions League
     ];
 
     /**
@@ -50,6 +52,10 @@ class SyncCompetitions extends Command
             }
 
             $competitionData = $response->json();
+
+            if ($competitionData && $competitionData['name'] && $competitionData['name'] === 'Primera Division') {
+                $competitionData['name'] = 'LaLiga';
+            }
 
             Competition::updateOrCreate(
                 ['external_id' => $competitionData['id']],
