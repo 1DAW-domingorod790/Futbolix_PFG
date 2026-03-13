@@ -1,4 +1,5 @@
 <script setup>
+import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 </script>
@@ -34,7 +35,7 @@ import { Head, Link } from '@inertiajs/vue3';
                 </div>
 
                 <!-- Cards de acceso rápido -->
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" :class="$page.props.auth.user.role === 'admin' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'">
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" :class="$page.props.auth.is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'">
                     <div class="card-sport p-6">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-futbolix-green/20">
                             <svg class="h-5 w-5 text-futbolix-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +70,7 @@ import { Head, Link } from '@inertiajs/vue3';
                     </div>
 
                     <Link
-                        v-if="$page.props.auth.user.role === 'admin'"
+                        v-if="$page.props.auth.is_admin"
                         :href="route('admin.users')"
                         class="card-sport p-6 block hover:border-futbolix-green transition"
                     >

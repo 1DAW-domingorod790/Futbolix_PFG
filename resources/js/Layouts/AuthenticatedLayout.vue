@@ -5,6 +5,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
 
 const showingNavigationDropdown = ref(false);
 </script>
@@ -14,7 +15,9 @@ const showingNavigationDropdown = ref(false);
         <div class="min-h-screen bg-futbolix-navy">
 
             <!-- NAVBAR -->
-            <nav class="border-b border-slate-700 bg-futbolix-dark sticky top-0 z-40">
+            <nav
+            class="border-b border-slate-700 bg-futbolix-dark sticky top-0 z-40"
+            style="background-color: #00285E;">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="flex h-16 justify-between">
 
@@ -22,15 +25,8 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex items-center">
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')" class="flex items-center gap-2">
-                                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-futbolix-green">
-                                        <svg class="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                                            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 1.5a8.5 8.5 0 0 1 5.3 1.85L14.5 8H9.5L6.7 5.35A8.5 8.5 0 0 1 12 3.5zM5.6 6.4 8 8.8v4.4l-3.8 2.8A8.47 8.47 0 0 1 3.5 12c0-2.1.76-4.02 2.1-5.6zm.9 10.3 3.5-2.6h4l3.5 2.6A8.49 8.49 0 0 1 12 20.5a8.49 8.49 0 0 1-5.5-3.8zm11.9-.5-3.8-2.8V8.8l2.4-2.4A8.48 8.48 0 0 1 20.5 12c0 1.56-.42 3.01-1.1 4.2z"/>
-                                        </svg>
-                                    </div>
-                                    <span class="text-lg font-bold text-white">
-                                        Futbo<span class="text-futbolix-green">lix</span>
-                                    </span>
+                                    <ApplicationLogoIconWhite />
+                                    <h1 class="text-xl font-bold text-white" style="font-size: x-large;">Futbolix</h1>
                                 </Link>
                             </div>
 
@@ -42,7 +38,13 @@ const showingNavigationDropdown = ref(false);
                                     Dashboard
                                 </NavLink>
                                 <NavLink
-                                    v-if="$page.props.auth.user.role === 'admin'"
+                                    :href="route('matches.index')"
+                                    :active="route().current('matches.index')"
+                                >
+                                    Partidos
+                                </NavLink>
+                                <NavLink
+                                    v-if="$page.props.auth.is_admin"
                                     :href="route('admin.users')"
                                     :active="route().current('admin.users')"
                                 >
@@ -61,10 +63,9 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center gap-2 rounded-md border border-slate-600 bg-futbolix-navy px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-futbolix-green hover:text-white focus:outline-none"
                                             >
-                                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-futbolix-green text-xs font-bold text-white">
-                                                    {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
-                                                </div>
-                                                {{ $page.props.auth.user.name }}
+                                                <img :src="$page.props.auth.user.avatar_url" alt="" class="w-10 h-10 rounded-full">
+
+
                                                 <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                                                 </svg>
@@ -116,9 +117,7 @@ const showingNavigationDropdown = ref(false);
                     <div class="border-t border-slate-700 pb-1 pt-4">
                         <div class="px-4">
                             <div class="flex items-center gap-2">
-                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-futbolix-green text-sm font-bold text-white">
-                                    {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
-                                </div>
+                                <img :src="$page.props.auth.user.avatar_url" class="w-10 h-10 rounded-full">
                                 <div>
                                     <div class="text-sm font-medium text-white">{{ $page.props.auth.user.name }}</div>
                                     <div class="text-xs text-slate-400">{{ $page.props.auth.user.email }}</div>

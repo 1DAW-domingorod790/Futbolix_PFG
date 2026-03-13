@@ -7,6 +7,9 @@ use App\Http\Controllers\Settings\ProfileController as SettingsProfileController
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Api\CompetitionController;
+use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\TeamController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -25,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
     Route::patch('/admin/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+    Route::post('/admin/users', [AdminController::class, 'store'])->name('admin.users.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -38,6 +42,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/settings/password', [SettingsPasswordController::class, 'edit'])->name('settings.password.edit');
     Route::put('/settings/password', [SettingsPasswordController::class, 'update'])->name('settings.password.update');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/matches', [GameController::class, 'index'])->name('matches.index');
+    Route::get('/matches/{id}', [GameController::class, 'show'])->name('matches.show');
+
+    Route::get('/competitions', [CompetitionController::class, 'index'])->name('competitions.index');
+    Route::get('/competitions/{id}', [CompetitionController::class, 'show'])->name('competitions.show');
+
+    Route::get('/teams', [TeamController::class, 'index'])->name('teams.index');
+    Route::get('/teams/{id}', [TeamController::class, 'show'])->name('teams.show');
 });
 
 require __DIR__.'/auth.php';

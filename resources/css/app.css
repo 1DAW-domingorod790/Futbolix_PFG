@@ -1,13 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.js";
 
 @layer base {
     :root {
         --color-primary:       #16a34a;
         --color-primary-dark:  #15803d;
-        --color-navy:          #0f172a;
-        --color-dark:          #1e293b;
+        --color-navy:          #00142F;
+        --color-dark:          #00285E;
         --color-gold:          #f59e0b;
     }
 
