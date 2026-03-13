@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Http;
 
 class SyncGames extends Command
 {
-    private array $competitionIds = [
-        2014,
-        2019,
-        2002,
-        2015,
-        2021,
+    public array $competitionIds = [
+        2014, // LaLiga
+        2021, // Premier League
+        2019, // Serie A
+        2002, // Bundesliga
+        2015, // Ligue 1
+        2000, // FIFA World Cup
+        2001, // UEFA Champions League
     ];
 
     /**
@@ -47,7 +49,6 @@ class SyncGames extends Command
 
             if ($response->failed()) {
                 $this->warn("No se pudieron obtener los partidos de la competicion con ID {$competitionId}");
-
                 continue;
             }
 
@@ -67,6 +68,11 @@ class SyncGames extends Command
                         'currentMatchDay' => $g['season']['currentMatchday'] ?? null,
                     ]
                 );
+
+                if ($g['homeTeam'] === null || $g['awayTeam'] === null || !isset($g['homeTeam']['id']) || !isset($g['awayTeam']['id'])) {
+                    $this->warn("Partido con ID {$g['id']} tiene datos de equipo faltantes. Se omite.");
+                    continue;
+                }
 
                 $homeTeam = Team::updateOrCreate(
                     ['external_id' => $g['homeTeam']['id']],
