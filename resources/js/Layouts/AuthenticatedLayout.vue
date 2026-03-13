@@ -25,7 +25,6 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex items-center">
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')" class="flex items-center gap-2">
-                                    <!-- <ApplicationLogoIcon style="width: 25%;" /> -->
                                     <ApplicationLogoIconWhite />
                                     <h1 class="text-xl font-bold text-white" style="font-size: x-large;">Futbolix</h1>
                                 </Link>
@@ -37,6 +36,12 @@ const showingNavigationDropdown = ref(false);
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    :href="route('matches.index')"
+                                    :active="route().current('matches.index')"
+                                >
+                                    Partidos
                                 </NavLink>
                                 <NavLink
                                     v-if="$page.props.auth.is_admin"

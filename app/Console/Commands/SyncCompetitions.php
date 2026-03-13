@@ -23,11 +23,11 @@ class SyncCompetitions extends Command
     protected $description = 'Sincroniza las competiciones desde football-data.org';
 
     public array $competitionIds = [
-        2014,
-        2019,
-        2002,
-        2015,
-        2021,
+        2014, // LaLiga
+        2021, // Premier League
+        2019, // Serie A
+        2002, // Bundesliga
+        2015, // Ligue 1
     ];
 
     /**
