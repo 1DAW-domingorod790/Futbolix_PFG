@@ -32,6 +32,8 @@ return new class extends Migration
             $table->integer('home_score')->nullable();
             $table->integer('away_score')->nullable();
 
+            $table->integer('matchday')->nullable();
+
             $table->dateTime('utc_date');
 
             $table->string('status');

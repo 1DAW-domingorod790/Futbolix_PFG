@@ -11,6 +11,7 @@ class Game extends Model
         'competition_id',
         'home_team_id',
         'away_team_id',
+        'matchday',
         'home_score',
         'away_score',
         'utc_date',
@@ -18,6 +19,7 @@ class Game extends Model
     ];
 
     protected $casts = [
+        'matchday' => 'integer',
         'utc_date' => 'datetime',
     ];
 

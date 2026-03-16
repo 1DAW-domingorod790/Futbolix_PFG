@@ -102,6 +102,7 @@ class SyncGames extends Command
                         'competition_id' => $competition->id,
                         'home_team_id' => $homeTeam->id,
                         'away_team_id' => $awayTeam->id,
+                        'matchday' => $g['matchday'] ?? null,
                         'home_score' => $g['score']['fullTime']['home'] ?? null,
                         'away_score' => $g['score']['fullTime']['away'] ?? null,
                         'utc_date' => $g['utcDate'],
