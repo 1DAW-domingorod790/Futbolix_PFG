@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('user')->after('email');
+        Schema::table('games', function (Blueprint $table) {
+            $table->unsignedInteger('matchday')->nullable()->after('away_team_id');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
+        Schema::table('games', function (Blueprint $table) {
+            $table->dropColumn('matchday');
         });
     }
 };

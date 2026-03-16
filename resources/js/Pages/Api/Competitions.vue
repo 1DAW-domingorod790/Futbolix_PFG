@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { route } from 'ziggy-js';
 
 type Competition = {
     id: number | string;
@@ -112,7 +113,7 @@ function competitionTypeLabel(type?: string | null) {
             </p>
         </template>
 
-        <div class="bg-[radial-gradient(circle_at_top,#f7f9fc_0%,#dce4ef_45%,#c7d3e6_100%)] px-4 py-5 lg:px-6 lg:py-6">
+        <div class="px-4 py-5 lg:px-6 lg:py-6">
             <div class="mx-auto w-full max-w-[1500px]">
                 <section class="rounded-[2rem] border-4 border-[#083b8d] bg-[#eef1f5] p-3 shadow-[0_18px_45px_rgba(8,59,141,0.18)] lg:p-4 mt-4">
                     <div class="rounded-[1.75rem] p-2 lg:p-3">
@@ -129,10 +130,11 @@ function competitionTypeLabel(type?: string | null) {
                                 </h3>
 
                                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-                                    <article
+                                    <Link
                                         v-for="competition in nationalCompetitions"
                                         :key="competition.id"
-                                        class="overflow-hidden rounded-2xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_8px_18px_rgba(3,34,82,0.3)]"
+                                        :href="route('competitions.show', competition.id)"
+                                        class="block overflow-hidden rounded-2xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_8px_18px_rgba(3,34,82,0.3)] transition duration-150 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(3,34,82,0.38)]"
                                     >
                                         <div class="border-b border-[#0c4ea9] px-3 py-3 text-white">
                                             <div class="flex items-start gap-2.5">
@@ -181,7 +183,7 @@ function competitionTypeLabel(type?: string | null) {
                                                 </p>
                                             </article>
                                         </div>
-                                    </article>
+                                    </Link>
                                 </div>
                             </section>
 
@@ -194,10 +196,11 @@ function competitionTypeLabel(type?: string | null) {
                                 </h3>
 
                                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-                                    <article
+                                    <Link
                                         v-for="competition in internationalCompetitions"
                                         :key="competition.id"
-                                        class="overflow-hidden rounded-2xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_8px_18px_rgba(3,34,82,0.3)]"
+                                        :href="route('competitions.show', competition.id)"
+                                        class="block overflow-hidden rounded-2xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_8px_18px_rgba(3,34,82,0.3)] transition duration-150 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(3,34,82,0.38)]"
                                     >
                                         <div class="border-b border-[#0c4ea9] px-3 py-3 text-white">
                                             <div class="flex items-start gap-2.5">
@@ -246,7 +249,7 @@ function competitionTypeLabel(type?: string | null) {
                                                 </p>
                                             </article>
                                         </div>
-                                    </article>
+                                    </Link>
                                 </div>
                             </section>
                         </div>
