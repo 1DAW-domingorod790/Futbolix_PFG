@@ -1,6 +1,7 @@
 <script setup>
+import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 </script>
 
 <template>
@@ -34,8 +35,8 @@ import { Head } from '@inertiajs/vue3';
                 </div>
 
                 <!-- Cards de acceso rápido -->
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    <div class="card-sport p-6">
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" :class="$page.props.auth.is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'">
+                    <Link :href="route('matches.index')" class="card-sport p-6 block hover:border-futbolix-green transition">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-futbolix-green/20">
                             <svg class="h-5 w-5 text-futbolix-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -44,9 +45,9 @@ import { Head } from '@inertiajs/vue3';
                         </div>
                         <h4 class="mb-1 font-semibold text-white">Ligas europeas</h4>
                         <p class="text-sm text-slate-400">Consulta clasificaciones y resultados de las 5 grandes ligas.</p>
-                    </div>
+                    </Link>
 
-                    <div class="card-sport p-6">
+                    <Link :href="route('tournaments.index')" class="card-sport p-6 block hover:border-futbolix-green transition">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-futbolix-gold/20">
                             <svg class="h-5 w-5 text-futbolix-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -55,9 +56,9 @@ import { Head } from '@inertiajs/vue3';
                         </div>
                         <h4 class="mb-1 font-semibold text-white">Mis torneos</h4>
                         <p class="text-sm text-slate-400">Crea y gestiona tus propias competiciones personalizadas.</p>
-                    </div>
+                    </Link>
 
-                    <div class="card-sport p-6">
+                    <Link :href="route('profile.edit')" class="card-sport p-6 block hover:border-futbolix-green transition">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20">
                             <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -66,7 +67,22 @@ import { Head } from '@inertiajs/vue3';
                         </div>
                         <h4 class="mb-1 font-semibold text-white">Mi perfil</h4>
                         <p class="text-sm text-slate-400">Edita tu información personal y ajusta tu cuenta.</p>
-                    </div>
+                    </Link>
+
+                    <Link
+                        v-if="$page.props.auth.is_admin"
+                        :href="route('admin.users')"
+                        class="card-sport p-6 block hover:border-futbolix-green transition"
+                    >
+                        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+                            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="mb-1 font-semibold text-white">Gestión de usuarios</h4>
+                        <p class="text-sm text-slate-400">Administra todos los usuarios registrados.</p>
+                    </Link>
                 </div>
 
             </div>
