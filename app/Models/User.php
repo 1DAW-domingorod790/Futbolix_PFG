@@ -89,4 +89,3 @@ class User extends Authenticatable
         return Storage::url($this->avatar_path);
     }
 }
-

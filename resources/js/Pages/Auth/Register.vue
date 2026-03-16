@@ -110,7 +110,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <FileInput 
+                <FileInput
                     v-model="form.avatar_path"
                 />
 
@@ -139,7 +139,7 @@ const submit = () => {
             <div class="mt-4 flex items-center justify-end">
                 <Link
                     :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-md text-sm text-slate-400 underline hover:text-white focus:outline-none focus:ring-2 focus:ring-futbolix-green focus:ring-offset-2 transition"
                 >
                     Already registered?
                 </Link>

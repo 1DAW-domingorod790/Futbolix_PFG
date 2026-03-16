@@ -93,6 +93,13 @@ const submit = () => {
                     Log in
                 </PrimaryButton>
             </div>
+
+            <div class="mt-6 text-center text-sm text-slate-400">
+                ¿No tienes cuenta?
+                <Link :href="route('register')" class="text-futbolix-green underline hover:text-white transition">
+                    Regístrate aquí
+                </Link>
+            </div>
         </form>
     </GuestLayout>
 </template>
