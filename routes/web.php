@@ -45,6 +45,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/tournaments', function () {
+        return Inertia::render('Tournaments/Index');
+    })->name('tournaments.index');
+
     Route::get('/matches', [GameController::class, 'index'])->name('matches.index');
     Route::get('/matches/{id}', [GameController::class, 'show'])->name('matches.show');
 

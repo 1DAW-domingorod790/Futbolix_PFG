@@ -44,6 +44,12 @@ const showingNavigationDropdown = ref(false);
                                     Partidos
                                 </NavLink>
                                 <NavLink
+                                    :href="route('tournaments.index')"
+                                    :active="route().current('tournaments.index')"
+                                >
+                                    Torneos
+                                </NavLink>
+                                <NavLink
                                     v-if="$page.props.auth.is_admin"
                                     :href="route('admin.users')"
                                     :active="route().current('admin.users')"
@@ -63,7 +69,7 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center gap-2 rounded-md border border-slate-600 bg-futbolix-navy px-3 py-2 text-sm font-medium text-slate-300 transition hover:border-futbolix-green hover:text-white focus:outline-none"
                                             >
-                                                <img :src="$page.props.auth.user.avatar_url" alt="" class="w-10 h-10 rounded-full">
+                                                <img :src="$page.props.auth.user.avatar_url" alt="" class="w-7 h-7 rounded-full">
 
 
                                                 <svg class="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
