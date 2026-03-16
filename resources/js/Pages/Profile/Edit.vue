@@ -47,7 +47,7 @@ const activeTab = ref('profile');
             </div>
         </div>
 
-        <div class="py-8 bg-gray-50 min-h-screen">
+        <div class="py-8     min-h-screen">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                 <!-- Single card -->

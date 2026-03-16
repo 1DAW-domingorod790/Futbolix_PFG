@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { route } from 'ziggy-js';
 
 type Team = {
     id: number | string;
@@ -36,6 +37,7 @@ type Competition = {
     startDate?: string | null;
     endDate?: string | null;
     lastUpdated?: string | null;
+    updated_at?: string | null;
     currentMatchDay?: number | null;
     teams?: Team[];
     games?: Game[];
@@ -327,7 +329,7 @@ function gameStatusLabel(status?: string | null) {
             </div>
         </template>
 
-        <div class="min-h-screen bg-[radial-gradient(circle_at_top,#f7f9fc_0%,#dce4ef_45%,#c7d3e6_100%)] px-4 py-6 lg:px-6 lg:py-8">
+        <div class="min-h-screen  px-4 py-6 lg:px-6 lg:py-8">
             <div class="mx-auto flex w-full max-w-[1500px] flex-col gap-5">
                 <section class="overflow-hidden rounded-[2rem] border-4 border-[#083b8d] bg-[#00357b] shadow-[0_18px_45px_rgba(8,59,141,0.18)]">
                     <div class="grid gap-5 p-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)] lg:p-6">
@@ -388,7 +390,7 @@ function gameStatusLabel(status?: string | null) {
                                     </div>
                                     <div class="flex items-center justify-between gap-4 border-t border-[#c8d5e6] pt-3 text-gray-500">
                                         <dt>Última actualización</dt>
-                                        <dd class="text-right">{{ formatDateTime(competition.lastUpdated) }}</dd>
+                                        <dd class="text-right">{{ formatDateTime(competition.updated_at) }}</dd>
                                     </div>
                                 </dl>
                             </article>
@@ -477,10 +479,6 @@ function gameStatusLabel(status?: string | null) {
                                 <div class="flex items-center justify-between gap-4 border-t border-[#0c4ea9] pt-3">
                                     <dt class="text-[#d8e7ff]">Estadio</dt>
                                     <dd class="text-right font-bold">{{ team.venue || 'Pendiente' }}</dd>
-                                </div>
-                                <div class="flex items-center justify-between gap-4 border-t border-[#0c4ea9] pt-3">
-                                    <dt class="text-[#d8e7ff]">ID externo</dt>
-                                    <dd class="text-right font-bold">{{ team.external_id || 'N/D' }}</dd>
                                 </div>
                             </dl>
                         </article>
@@ -606,7 +604,7 @@ function gameStatusLabel(status?: string | null) {
                                     :key="game.id"
                                     class="rounded-xl border border-[#5ca1ff] bg-[#0051b2] px-3 py-3 text-white"
                                 >
-                                    <div class="mb-3 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-wide text-[#d8e7ff]">
+                                    <div class="mb-4 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-wide text-[#d8e7ff]">
                                         <span>{{ formatShortDate(game.utc_date) }}</span>
                                         <span>{{ formatTime(game.utc_date) }}</span>
                                     </div>
@@ -616,7 +614,7 @@ function gameStatusLabel(status?: string | null) {
                                             <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2">
                                                 <img
                                                     v-if="game.homeTeam?.crest || game.home_team?.crest"
-                                                    :src="game.homeTeam?.crest || game.home_team?.crest"
+                                                    :src="(game.homeTeam?.crest ?? game.home_team?.crest) ?? undefined"
                                                     :alt="teamName(game.homeTeam || game.home_team, 'Local')"
                                                     class="h-full w-full object-contain"
                                                 >
@@ -640,7 +638,7 @@ function gameStatusLabel(status?: string | null) {
                                             <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2">
                                                 <img
                                                     v-if="game.awayTeam?.crest || game.away_team?.crest"
-                                                    :src="game.awayTeam?.crest || game.away_team?.crest"
+                                                    :src="game.awayTeam?.crest ?? game.away_team?.crest ?? undefined"
                                                     :alt="teamName(game.awayTeam || game.away_team, 'Visitante')"
                                                     class="h-full w-full object-contain"
                                                 >
@@ -649,10 +647,6 @@ function gameStatusLabel(status?: string | null) {
                                                 </span>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="mt-3 border-t border-[#0c4ea9] pt-3 text-right text-xs font-bold uppercase tracking-wide text-[#d8e7ff]">
-                                        {{ gameStatusLabel(game.status) }}
                                     </div>
                                 </article>
                             </div>

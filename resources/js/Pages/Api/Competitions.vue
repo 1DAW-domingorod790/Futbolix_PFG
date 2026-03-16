@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { route } from 'ziggy-js';
 
 type Competition = {
     id: number | string;
@@ -112,7 +113,7 @@ function competitionTypeLabel(type?: string | null) {
             </p>
         </template>
 
-        <div class="bg-[radial-gradient(circle_at_top,#f7f9fc_0%,#dce4ef_45%,#c7d3e6_100%)] px-4 py-5 lg:px-6 lg:py-6">
+        <div class="px-4 py-5 lg:px-6 lg:py-6">
             <div class="mx-auto w-full max-w-[1500px]">
                 <section class="rounded-[2rem] border-4 border-[#083b8d] bg-[#eef1f5] p-3 shadow-[0_18px_45px_rgba(8,59,141,0.18)] lg:p-4 mt-4">
                     <div class="rounded-[1.75rem] p-2 lg:p-3">
