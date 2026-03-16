@@ -8,26 +8,20 @@ import { Head, Link } from '@inertiajs/vue3';
     <Head title="Dashboard" />
 
     <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-white">
-                Dashboard
-            </h2>
-        </template>
-
         <div class="py-10">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                 <!-- Bienvenida -->
-                <div class="mb-8 rounded-2xl border border-slate-700 bg-futbolix-dark p-6">
+                <div class="mb-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-futbolix-dark p-6 shadow-sm">
                     <div class="flex items-center gap-4">
                         <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-futbolix-green text-xl font-bold text-white shadow-lg shadow-futbolix-green/30">
                             {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-white">
+                            <h3 class="text-lg font-semibold text-slate-800 dark:text-white">
                                 ¡Bienvenido, {{ $page.props.auth.user.name }}!
                             </h3>
-                            <p class="text-sm text-slate-400">
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
                                 Ya estás dentro de Futbolix. Pronto podrás consultar ligas y gestionar tus torneos.
                             </p>
                         </div>
@@ -43,8 +37,8 @@ import { Head, Link } from '@inertiajs/vue3';
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
-                        <h4 class="mb-1 font-semibold text-white">Ligas europeas</h4>
-                        <p class="text-sm text-slate-400">Consulta clasificaciones y resultados de las 5 grandes ligas.</p>
+                        <h4 class="mb-1 font-semibold text-slate-800 dark:text-white">Ligas europeas</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Consulta clasificaciones y resultados de las 5 grandes ligas.</p>
                     </Link>
 
                     <Link :href="route('tournaments.index')" class="card-sport p-6 block hover:border-futbolix-green transition">
@@ -54,8 +48,8 @@ import { Head, Link } from '@inertiajs/vue3';
                                     d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                             </svg>
                         </div>
-                        <h4 class="mb-1 font-semibold text-white">Mis torneos</h4>
-                        <p class="text-sm text-slate-400">Crea y gestiona tus propias competiciones personalizadas.</p>
+                        <h4 class="mb-1 font-semibold text-slate-800 dark:text-white">Mis torneos</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Crea y gestiona tus propias competiciones personalizadas.</p>
                     </Link>
 
                     <Link :href="route('profile.edit')" class="card-sport p-6 block hover:border-futbolix-green transition">
@@ -65,8 +59,8 @@ import { Head, Link } from '@inertiajs/vue3';
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>
-                        <h4 class="mb-1 font-semibold text-white">Mi perfil</h4>
-                        <p class="text-sm text-slate-400">Edita tu información personal y ajusta tu cuenta.</p>
+                        <h4 class="mb-1 font-semibold text-slate-800 dark:text-white">Mi perfil</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Edita tu información personal y ajusta tu cuenta.</p>
                     </Link>
 
                     <Link
@@ -80,8 +74,8 @@ import { Head, Link } from '@inertiajs/vue3';
                                     d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
                         </div>
-                        <h4 class="mb-1 font-semibold text-white">Gestión de usuarios</h4>
-                        <p class="text-sm text-slate-400">Administra todos los usuarios registrados.</p>
+                        <h4 class="mb-1 font-semibold text-slate-800 dark:text-white">Gestión de usuarios</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Administra todos los usuarios registrados.</p>
                     </Link>
                 </div>
 

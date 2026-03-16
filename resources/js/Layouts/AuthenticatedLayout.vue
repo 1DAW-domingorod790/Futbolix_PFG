@@ -6,13 +6,15 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
+import { useTheme } from '@/Composables/useTheme';
 
 const showingNavigationDropdown = ref(false);
+const { isDark, toggle } = useTheme();
 </script>
 
 <template>
     <div>
-        <div class="min-h-screen bg-futbolix-navy">
+        <div class="min-h-screen bg-slate-100 dark:bg-futbolix-navy">
 
             <!-- NAVBAR -->
             <nav
@@ -59,8 +61,25 @@ const showingNavigationDropdown = ref(false);
                             </div>
                         </div>
 
-                        <!-- User dropdown -->
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                        <!-- Theme toggle + User dropdown -->
+                        <div class="hidden sm:ms-6 sm:flex sm:items-center gap-2">
+                            <!-- Botón tema -->
+                            <button
+                                @click="toggle"
+                                type="button"
+                                class="flex h-8 w-8 items-center justify-center rounded-md border border-slate-600 text-slate-300 transition hover:border-futbolix-green hover:text-white"
+                                :title="isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+                            >
+                                <!-- Sol (modo claro) -->
+                                <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                <!-- Luna (modo oscuro) -->
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                                </svg>
+                            </button>
+
                             <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>

@@ -25,8 +25,8 @@ const form = useForm({
 <template>
     <section class="w-full">
         <header class="mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Información Personal</h2>
-            <p class="mt-1 text-sm text-gray-500">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Información Personal</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
                 Actualiza tu nombre y dirección de correo electrónico.
             </p>
         </header>
@@ -37,7 +37,7 @@ const form = useForm({
         >
             <!-- Campo Nombre -->
             <div class="group">
-                <InputLabel for="name" value="Nombre" class="mb-1.5 text-sm font-semibold text-black" style="color:black"
+                <InputLabel for="name" value="Nombre" class="mb-1.5 text-sm font-semibold text-gray-700 dark:text-slate-300"
                 />
                 <div class="relative">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -48,12 +48,11 @@ const form = useForm({
                     <TextInput
                         id="name"
                         type="text"
-                        class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100"
+                        class="mt-0 block w-full rounded-xl border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 pl-10 text-gray-900 dark:text-white transition focus:border-green-400 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-green-100"
                         v-model="form.name"
                         required
                         autofocus
                         autocomplete="name"
-                        style="color:black"
                     />
                 </div>
                 <InputError class="mt-1.5" :message="form.errors.name" />
@@ -61,7 +60,7 @@ const form = useForm({
 
             <!-- Campo Email -->
             <div class="group">
-                <InputLabel for="email" value="Correo Electrónico" class="mb-1.5 text-sm font-semibold text-black" style="color:black"/>
+                <InputLabel for="email" value="Correo Electrónico" class="mb-1.5 text-sm font-semibold text-gray-700 dark:text-slate-300"/>
                 <div class="relative">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
@@ -71,11 +70,10 @@ const form = useForm({
                     <TextInput
                         id="email"
                         type="email"
-                        class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100"
+                        class="mt-0 block w-full rounded-xl border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 pl-10 text-gray-900 dark:text-white transition focus:border-green-400 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-green-100"
                         v-model="form.email"
                         required
                         autocomplete="username"
-                        style="color:black"
                     />
                 </div>
                 <InputError class="mt-1.5" :message="form.errors.email" />

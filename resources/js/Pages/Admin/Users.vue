@@ -60,11 +60,11 @@ function createUser() {
         <Head title="Gestión de Usuarios" />
 
         <div class="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <h1 class="text-2xl font-bold text-white mb-6">Gestión de Usuarios</h1>
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white mb-6">Gestión de Usuarios</h1>
 
-            <div class="overflow-x-auto rounded-lg border border-slate-700">
-                <table class="w-full text-sm text-left text-slate-300">
-                    <thead class="bg-slate-800 text-slate-400 uppercase text-xs">
+            <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                    <thead class="bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs">
                         <tr>
                             <th class="px-6 py-3 text-center">#</th>
                             <th class="px-6 py-3 text-center">Nombre</th>
@@ -74,14 +74,14 @@ function createUser() {
                             <th class="px-6 py-3 text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white dark:bg-transparent">
                         <tr
                             v-for="user in users"
                             :key="user.id"
-                            class="border-t border-slate-700 hover:bg-slate-800 transition"
+                            class="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                         >
-                            <td class="px-6 py-4 text-slate-500 text-center">{{ user.id }}</td>
-                            <td class="px-6 py-4 font-medium text-white text-center">{{ user.name }}</td>
+                            <td class="px-6 py-4 text-slate-400 dark:text-slate-500 text-center">{{ user.id }}</td>
+                            <td class="px-6 py-4 font-medium text-slate-800 dark:text-white text-center">{{ user.name }}</td>
                             <td class="px-6 py-4 text-center">{{ user.email }}</td>
                             <td class="px-6 py-4 text-center">
                                 <span
@@ -93,7 +93,7 @@ function createUser() {
                                     {{ user.role.name }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-500 text-center">
+                            <td class="px-6 py-4 text-slate-400 dark:text-slate-500 text-center">
                                 {{ new Date(user.created_at).toLocaleDateString('es-ES') }}
                             </td>
                             <td class="px-6 py-4 flex gap-2 justify-center">

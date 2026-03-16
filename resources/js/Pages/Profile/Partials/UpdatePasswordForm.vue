@@ -36,11 +36,11 @@ const updatePassword = () => {
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Update Password
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                Cambiar Contraseña
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">
                 Ensure your account is using a long, random password to stay
                 secure.
             </p>
@@ -48,18 +48,15 @@ const updatePassword = () => {
 
         <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
             <div>
-                <InputLabel for="current_password" value="Current Password" 
-                    style="color:black"
-                />
+                <InputLabel for="current_password" value="Contraseña Actual" class="text-gray-700 dark:text-slate-300" />
 
                 <TextInput
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100"
+                    class="mt-1 block w-full rounded-xl border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white transition focus:border-green-400 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-green-100"
                     autocomplete="current-password"
-                    style="color:black"
                 />
 
                 <InputError
@@ -69,18 +66,15 @@ const updatePassword = () => {
             </div>
 
             <div>
-                <InputLabel for="password" value="New Password" 
-                    style="color:black"
-                />
+                <InputLabel for="password" value="Nueva Contraseña" class="text-gray-700 dark:text-slate-300" />
 
                 <TextInput
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100"
+                    class="mt-1 block w-full rounded-xl border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white transition focus:border-green-400 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-green-100"
                     autocomplete="new-password"
-                    style="color:black"
                 />
 
                 <InputError :message="form.errors.password" class="mt-2" />
@@ -89,17 +83,16 @@ const updatePassword = () => {
             <div>
                 <InputLabel
                     for="password_confirmation"
-                    value="Confirm Password"
-                    style="color: black;"
+                    value="Confirmar Contraseña"
+                    class="text-gray-700 dark:text-slate-300"
                 />
 
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-0 block w-full rounded-xl border-gray-200 bg-gray-50 pl-10 transition focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-100mt-1 block w-full"
+                    class="mt-1 block w-full rounded-xl border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white transition focus:border-green-400 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-green-100"
                     autocomplete="new-password"
-                    style="color:black"
                 />
 
                 <InputError
@@ -119,9 +112,9 @@ const updatePassword = () => {
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
+                        class="text-sm text-gray-600 dark:text-slate-400"
                     >
-                        Saved.
+                        ¡Guardado!
                     </p>
                 </Transition>
             </div>

@@ -47,19 +47,19 @@ const activeTab = ref('profile');
             </div>
         </div>
 
-        <div class="py-8     min-h-screen">
+        <div class="py-8">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
                 <!-- Single card -->
-                <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
+                <div class="overflow-hidden rounded-2xl bg-white dark:bg-futbolix-dark shadow-sm ring-1 ring-gray-200 dark:ring-slate-700">
 
                     <!-- Tab navigation -->
-                    <div class="flex border-b border-gray-200">
+                    <div class="flex border-b border-gray-200 dark:border-slate-700">
                         <!-- Información de Perfil -->
                         <button
                             @click="activeTab = 'profile'"
                             class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none"
-                            :class="activeTab === 'profile' ? 'text-green-600' : 'text-gray-500 hover:text-gray-700'"
+                            :class="activeTab === 'profile' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
                         >
                             <div class="flex items-center justify-center gap-2">
                                 <div class="h-2 w-2 rounded-full bg-green-500"></div>
@@ -71,8 +71,8 @@ const activeTab = ref('profile');
                         <!-- Cambiar Contraseña -->
                         <button
                             @click="activeTab = 'password'"
-                            class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none border-l border-gray-200"
-                            :class="activeTab === 'password' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                            class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none border-l border-gray-200 dark:border-slate-700"
+                            :class="activeTab === 'password' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
                         >
                             <div class="flex items-center justify-center gap-2">
                                 <div class="h-2 w-2 rounded-full bg-blue-500"></div>
@@ -84,8 +84,8 @@ const activeTab = ref('profile');
                         <!-- Eliminar Perfil -->
                         <button
                             @click="activeTab = 'delete'"
-                            class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none border-l border-gray-200"
-                            :class="activeTab === 'delete' ? 'text-red-600' : 'text-gray-500 hover:text-gray-700'"
+                            class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none border-l border-gray-200 dark:border-slate-700"
+                            :class="activeTab === 'delete' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
                         >
                             <div class="flex items-center justify-center gap-2">
                                 <div class="h-2 w-2 rounded-full bg-red-500"></div>

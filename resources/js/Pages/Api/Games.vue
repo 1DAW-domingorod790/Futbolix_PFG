@@ -181,30 +181,30 @@ function gameStatus(game: any) {
     <Head title="Partidos" />
 
     <AuthenticatedLayout>
-        <div class="min-h-screen bg-[#0f172a] px-3 py-4 lg:px-6 lg:py-6">
+        <div class="bg-slate-100 dark:bg-[#0f172a] px-3 py-4 lg:px-6 lg:py-6">
             <div class="mx-auto w-full max-w-screen-2xl">
-                <div class="mb-4 flex items-center gap-2 rounded-xl bg-[#ffd400] shadow-[0_8px_20px_rgba(160,130,0,0.2)] border border-2 px-3 py-2 sticky top-18 z-10 md:mx-auto md:max-w-sm">
+                <div class="mb-4 flex items-center gap-2 rounded-2xl bg-[#ffd400] px-4 py-2 shadow-[0_4px_12px_rgba(160,130,0,0.2)] sticky top-16 z-10 md:mx-auto md:max-w-sm">
                     <button
                         type="button"
-                        class="flex h-7 w-7 items-center justify-center rounded-full text-slate-300 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
+                        class="flex h-7 w-7 items-center justify-center rounded-full text-black transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
                         :disabled="safeSelectedDateIndex === 0"
                         @click="showPreviousDay"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="19" y1="12" x2="5" y2="12"></line>
                             <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
                     </button>
-                    <div class="flex-1 text-center text-sm font-semibold text-black uppercase tracking-wide">
+                    <div class="flex-1 text-center text-sm font-black text-black uppercase tracking-wide">
                         {{ currentDayLabel }}
                     </div>
                     <button
                         type="button"
-                        class="flex h-7 w-7 items-center justify-center rounded-full text-slate-300 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
+                        class="flex h-7 w-7 items-center justify-center rounded-full text-black transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
                         :disabled="safeSelectedDateIndex >= groupedDates.length - 1"
                         @click="showNextDay"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                             <polyline points="12 5 19 12 12 19"></polyline>
                         </svg>
@@ -214,7 +214,6 @@ function gameStatus(game: any) {
                 <div
                     v-if="competitionSections.length"
                     :class="competitionSections.length === 1 ? 'flex justify-center' : 'grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3'"
-                    class="rounded-[2rem] border-4 border-[#083b8d] bg-[#eef1f5] p-3 shadow-[0_18px_45px_rgba(8,59,141,0.18)] lg:p-4 mt-4"
                 >
 
                     <section
