@@ -40,4 +40,8 @@ return [
         'base_url' => 'https://api.football-data.org/v4/',
     ],
 
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+    ],
+
 ];
