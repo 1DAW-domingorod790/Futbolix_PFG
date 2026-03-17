@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Api\MatchPredictionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
 use App\Http\Controllers\Settings\ProfileController as SettingsProfileController;
@@ -48,6 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tournaments', function () {
         return Inertia::render('Tournaments/Index');
     })->name('tournaments.index');
+
+    Route::post('/api/predictions/match', [MatchPredictionController::class, 'store'])
+        ->name('predictions.match');
 
     Route::get('/matches', [GameController::class, 'index'])->name('matches.index');
     Route::get('/matches/{id}', [GameController::class, 'show'])->name('matches.show');
