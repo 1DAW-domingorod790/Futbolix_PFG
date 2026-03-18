@@ -117,6 +117,62 @@ const activeDateGroup = computed(
 
 const gamesForSelectedDate = computed(() => activeDateGroup.value?.games ?? []);
 
+const competitionGroupsForSelectedDate = computed(() => {
+    const groups = new Map<
+        string,
+        {
+            competitionKey: string;
+            competition: Competition | null;
+            games: Game[];
+            firstKickoff: number;
+        }
+    >();
+
+    gamesForSelectedDate.value.forEach((game) => {
+        const competition = game.competition ?? null;
+        const rawCompetitionId =
+            competition?.id ?? competition?.external_id ?? 'without-competition';
+        const competitionKey = String(rawCompetitionId);
+        const kickoff = new Date(game.utc_date ?? '').getTime();
+
+        if (!groups.has(competitionKey)) {
+            groups.set(competitionKey, {
+                competitionKey,
+                competition,
+                games: [],
+                firstKickoff: Number.isNaN(kickoff) ? Number.POSITIVE_INFINITY : kickoff,
+            });
+        }
+
+        const group = groups.get(competitionKey);
+
+        if (!group) {
+            return;
+        }
+
+        group.games.push(game);
+
+        if (!Number.isNaN(kickoff) && kickoff < group.firstKickoff) {
+            group.firstKickoff = kickoff;
+        }
+
+        if (!group.competition && competition) {
+            group.competition = competition;
+        }
+    });
+
+    return Array.from(groups.values())
+        .map((group) => ({
+            ...group,
+            games: [...group.games].sort(
+                (a, b) =>
+                    new Date(a.utc_date ?? '').getTime() -
+                    new Date(b.utc_date ?? '').getTime(),
+            ),
+        }))
+        .sort((a, b) => a.firstKickoff - b.firstKickoff);
+});
+
 const normalizedCompetitions = computed(() =>
     [...(props.competitions ?? [])].sort((a, b) => {
         const hasMatchdayA = a.currentMatchDay ? 1 : 0;
@@ -383,151 +439,158 @@ function competitionTypeLabel(type?: string | null) {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-3 2xl:grid-cols-2">
-                            <Link
-                                v-for="game in gamesForSelectedDate"
-                                :key="game.id"
-                                :href="route('matches.show', game.id)"
-                                class="overflow-hidden rounded-xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_6px_14px_rgba(3,34,82,0.25)]"
+                        <div
+                            v-for="group in competitionGroupsForSelectedDate"
+                            :key="group.competitionKey"
+                            class="overflow-hidden rounded-xl border-2 border-[#042b67] bg-[#00357b] shadow-[0_6px_14px_rgba(3,34,82,0.25)] mb-3"
+                        >
+                            <div
+                                class="flex items-center justify-between gap-2 border-b bg-[#00479d] border-[#0c4ea9] px-3 py-2 text-white lg:px-4 lg:py-3"
                             >
                                 <div
-                                    class="flex items-center justify-between gap-2 border-b border-[#0c4ea9] px-3 py-2 text-white lg:px-4 lg:py-3"
+                                    class="flex min-w-0 items-center gap-2"
                                 >
                                     <div
-                                        class="flex min-w-0 items-center gap-2"
+                                        class="h-12 w-12 flex items-center justify-center overflow-hidden rounded-full bg-white/95 p-1"
                                     >
-                                        <div
-                                            class="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-white/95 p-1 lg:h-8 lg:w-8"
+                                        <img
+                                            v-if="group.competition?.emblem"
+                                            :src="group.competition.emblem"
+                                            :alt="
+                                                group.competition?.name ||
+                                                'Competición'
+                                            "
+                                            class="h-full w-full object-contain"
+                                        />
+                                        <span
+                                            v-else
+                                            class="text-xs font-black text-[#00357b]"
                                         >
-                                            <img
-                                                v-if="game.competition?.emblem"
-                                                :src="game.competition.emblem"
-                                                :alt="
-                                                    game.competition?.name ||
-                                                    'Competición'
-                                                "
-                                                class="h-full w-full object-contain"
-                                            />
-                                            <span
-                                                v-else
-                                                class="text-xs font-black text-[#00357b]"
-                                            >
-                                                {{
-                                                    competitionInitials(
-                                                        game.competition?.name,
-                                                    )
-                                                }}
-                                            </span>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h3
-                                                class="truncate text-sm font-black lg:text-base"
-                                            >
-                                                {{
-                                                    game.competition?.name ||
-                                                    'Sin competición'
-                                                }}
-                                            </h3>
-                                            <p
-                                                class="text-[10px] font-semibold tracking-wide text-[#d8e7ff] uppercase"
-                                            >
-                                                {{
-                                                    formatDateTime(
-                                                        game.utc_date,
-                                                    )
-                                                }}
-                                            </p>
-                                        </div>
+                                            {{
+                                                competitionInitials(
+                                                    group.competition?.name,
+                                                )
+                                            }}
+                                        </span>
                                     </div>
-                                    <div
-                                        class="shrink-0 rounded-full border border-[#d9b100] bg-[#ffd84d] px-2 py-1 text-right text-[10px] font-bold tracking-wide text-[#4a3900] uppercase"
-                                    >
-                                        {{ venueName(game) }}
+                                    <div class="min-w-0">
+                                        <h3
+                                            class="truncate font-black text-l"
+                                        >
+                                            {{
+                                                group.competition?.name ||
+                                                'Sin competición'
+                                            }}
+                                        </h3>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="space-y-3 p-3">
+                            <div class="divide-y divide-[#0c4ea9]">
+                                <Link
+                                    v-for="game in group.games"
+                                    :key="game.id"
+                                    :href="route('matches.show', game.id)"
+                                    class="block bg-[#00357b] transition-colors hover:bg-[#0a448f]"
+                                >
                                     <div
-                                        class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_88px_minmax(0,1fr)] lg:gap-3"
+                                        class="flex items-center justify-between gap-2 px-3 py-2 text-white lg:px-4 lg:py-3"
                                     >
-                                        <div
-                                            class="flex min-w-0 items-center gap-2 text-left"
+                                        <p
+                                            class="text-[10px] font-semibold tracking-wide text-[#d8e7ff] uppercase"
                                         >
-                                            <img
-                                                v-if="
-                                                    game.home_team?.crest ||
-                                                    game.homeTeam?.crest
-                                                "
-                                                :src="
-                                                    game.home_team?.crest ??
-                                                    game.homeTeam?.crest ??
-                                                    undefined
-                                                "
-                                                :alt="
-                                                    teamName(
-                                                        game.home_team ||
-                                                            game.homeTeam,
-                                                        'Local',
-                                                    )
-                                                "
-                                                class="h-8 w-8 shrink-0 object-contain lg:h-10 lg:w-10"
-                                            />
-                                            <p
-                                                class="line-clamp-2 text-xs leading-tight font-bold text-white lg:text-sm"
-                                            >
-                                                {{
-                                                    teamName(
-                                                        game.home_team ||
-                                                            game.homeTeam,
-                                                        'Local',
-                                                    )
-                                                }}
-                                            </p>
-                                        </div>
-
+                                            {{ formatDateTime(game.utc_date) }}
+                                        </p>
                                         <div
-                                            class="mx-auto flex h-10 min-w-[56px] items-center justify-center rounded-full border-2 border-[#ffd400] bg-[#00357b] px-2 text-center text-xs font-black text-[#ffd400] lg:h-12 lg:min-w-[72px] lg:text-sm"
+                                            class="shrink-0 rounded-full border border-[#d9b100] bg-[#ffd84d] px-2 py-1 text-right text-[10px] font-bold tracking-wide text-[#4a3900] uppercase"
                                         >
-                                            {{ gameStatus(game) }}
-                                        </div>
-
-                                        <div
-                                            class="flex min-w-0 items-center justify-end gap-2 text-right"
-                                        >
-                                            <p
-                                                class="order-1 line-clamp-2 text-xs leading-tight font-bold text-white lg:text-sm"
-                                            >
-                                                {{
-                                                    teamName(
-                                                        game.away_team ||
-                                                            game.awayTeam,
-                                                        'Visitante',
-                                                    )
-                                                }}
-                                            </p>
-                                            <img
-                                                v-if="
-                                                    game.away_team?.crest ||
-                                                    game.awayTeam?.crest
-                                                "
-                                                :src="
-                                                    game.away_team?.crest ??
-                                                    game.awayTeam?.crest ??
-                                                    undefined
-                                                "
-                                                :alt="
-                                                    teamName(
-                                                        game.away_team ||
-                                                            game.awayTeam,
-                                                        'Visitante',
-                                                    )
-                                                "
-                                                class="order-2 h-8 w-8 shrink-0 object-contain lg:h-10 lg:w-10"
-                                            />
+                                            {{ venueName(game) }}
                                         </div>
                                     </div>
-                                </div>
-                            </Link>
+
+                                    <div class="space-y-3 px-3 pb-3 lg:px-4 lg:pb-4">
+                                        <div
+                                            class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 lg:grid-cols-[minmax(0,1fr)_88px_minmax(0,1fr)] lg:gap-3"
+                                        >
+                                            <div
+                                                class="flex min-w-0 items-center gap-2 text-left"
+                                            >
+                                                <img
+                                                    v-if="
+                                                        game.home_team?.crest ||
+                                                        game.homeTeam?.crest
+                                                    "
+                                                    :src="
+                                                        game.home_team?.crest ??
+                                                        game.homeTeam?.crest ??
+                                                        undefined
+                                                    "
+                                                    :alt="
+                                                        teamName(
+                                                            game.home_team ||
+                                                                game.homeTeam,
+                                                            'Local',
+                                                        )
+                                                    "
+                                                    class="h-8 w-8 shrink-0 object-contain lg:h-10 lg:w-10"
+                                                />
+                                                <p
+                                                    class="line-clamp-2 text-xs leading-tight font-bold text-white lg:text-sm"
+                                                >
+                                                    {{
+                                                        teamName(
+                                                            game.home_team ||
+                                                                game.homeTeam,
+                                                            'Local',
+                                                        )
+                                                    }}
+                                                </p>
+                                            </div>
+
+                                            <div
+                                                class="mx-auto flex h-10 min-w-[56px] items-center justify-center rounded-full border-2 border-[#ffd400] bg-[#00357b] px-2 text-center text-xs font-black text-[#ffd400] lg:h-12 lg:min-w-[72px] lg:text-sm"
+                                            >
+                                                {{ gameStatus(game) }}
+                                            </div>
+
+                                            <div
+                                                class="flex min-w-0 items-center justify-end gap-2 text-right"
+                                            >
+                                                <p
+                                                    class="order-1 line-clamp-2 text-xs leading-tight font-bold text-white lg:text-sm"
+                                                >
+                                                    {{
+                                                        teamName(
+                                                            game.away_team ||
+                                                                game.awayTeam,
+                                                            'Visitante',
+                                                        )
+                                                    }}
+                                                </p>
+                                                <img
+                                                    v-if="
+                                                        game.away_team?.crest ||
+                                                        game.awayTeam?.crest
+                                                    "
+                                                    :src="
+                                                        game.away_team?.crest ??
+                                                        game.awayTeam?.crest ??
+                                                        undefined
+                                                    "
+                                                    :alt="
+                                                        teamName(
+                                                            game.away_team ||
+                                                                game.awayTeam,
+                                                            'Visitante',
+                                                        )
+                                                    "
+                                                    class="order-2 h-8 w-8 shrink-0 object-contain lg:h-10 lg:w-10"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
                         </div>
                     </div>
 

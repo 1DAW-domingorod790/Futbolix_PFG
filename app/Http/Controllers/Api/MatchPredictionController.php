@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
+use App\Models\Api\Game;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class MatchPredictionController extends Controller
 {
@@ -47,9 +50,14 @@ class MatchPredictionController extends Controller
             ], 500);
         }
 
+        $game = Game::query()
+            ->with(['competition', 'homeTeam', 'awayTeam'])
+            ->findOrFail($validated['match']['id']);
+
         [$systemPrompt, $userPrompt] = $this->buildPrompts(
             $validated['match'],
             $validated['competition'],
+            $game
         );
 
         try {
@@ -99,10 +107,40 @@ class MatchPredictionController extends Controller
         return response()->json($prediction);
     }
 
-    private function buildPrompts(array $match, array $competition): array
+    private function recentGamesForTeam(?int $teamId, int|string $currentGameId): Collection
+    {
+        if (!$teamId) {
+            return collect();
+        }
+
+        return Game::query()
+            ->with(['competition', 'homeTeam', 'awayTeam'])
+            ->whereKeyNot($currentGameId)
+            ->where(function (Builder $query) use ($teamId) {
+                $query
+                    ->where('home_team_id', $teamId)
+                    ->orWhere('away_team_id', $teamId);
+            })
+            ->where('status', 'FINISHED')
+            ->orderByDesc('utc_date')
+            ->limit(5)
+            ->get();
+    }
+
+    private function buildPrompts(array $match, array $competition, Game $game): array
     {
         $homeTeam = $this->teamName($match['homeTeam'] ?? $match['home_team'] ?? []);
         $awayTeam = $this->teamName($match['awayTeam'] ?? $match['away_team'] ?? []);
+
+        $homeRecentGames = $this->recentGamesForTeam(
+            teamId: $game->home_team_id,
+            currentGameId: $game->id,
+        );
+
+        $awayRecentGames = $this->recentGamesForTeam(
+            teamId: $game->away_team_id,
+            currentGameId: $game->id,
+        );
 
         $systemPrompt = <<<'PROMPT'
         Eres un analista experto en fútbol europeo.
@@ -116,6 +154,8 @@ class MatchPredictionController extends Controller
         $payload = [
             'home_team' => $homeTeam,
             'away_team' => $awayTeam,
+            'home_team_last_5' => $homeRecentGames,
+            'away_team_last_5' => $awayRecentGames,
             'competition' => $competition['name'] ?? null,
             'competition_type' => $competition['type'] ?? null,
             'current_matchday' => $competition['currentMatchDay'] ?? null,

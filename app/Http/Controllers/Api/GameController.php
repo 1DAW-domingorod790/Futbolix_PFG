@@ -97,6 +97,7 @@ class GameController extends Controller
                     ->where('home_team_id', $teamId)
                     ->orWhere('away_team_id', $teamId);
             })
+            ->where('status', 'FINISHED')
             ->orderByDesc('utc_date')
             ->limit(5)
             ->get();
