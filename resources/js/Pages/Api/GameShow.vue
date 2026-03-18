@@ -507,7 +507,7 @@ function summaryValue(summary: TeamSummary, key: (typeof summaryMetrics)[number]
                     </div>
                 </section>
 
-                <div v-if="shouldShowPrediction">
+                <div v-if="shouldShowPrediction && competition">
                     <MatchPredictionCard :match="game" :competition="competition" />
                 </div>
 
