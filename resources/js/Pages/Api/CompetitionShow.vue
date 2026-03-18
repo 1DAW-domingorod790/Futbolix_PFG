@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { route } from 'ziggy-js';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 type Team = {
     id: number | string;
@@ -284,25 +284,6 @@ function gameStatus(game: Game) {
     return 'VS';
 }
 
-function gameStatusLabel(status?: string | null) {
-    if (!status) {
-        return 'Pendiente';
-    }
-
-    if (status === 'FINISHED') {
-        return 'Finalizado';
-    }
-
-    if (status === 'IN_PLAY') {
-        return 'En juego';
-    }
-
-    if (status === 'TIMED') {
-        return 'Programado';
-    }
-
-    return status;
-}
 </script>
 
 <template>
@@ -321,10 +302,10 @@ function gameStatusLabel(status?: string | null) {
                 </div>
 
                 <Link
-                    :href="route('competitions.index')"
+                    :href="route('matches.index')"
                     class="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/20"
                 >
-                    Volver a competiciones
+                    Volver
                 </Link>
             </div>
         </template>
@@ -599,9 +580,10 @@ function gameStatusLabel(status?: string | null) {
                             </div>
 
                             <div class="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-3">
-                                <article
+                                <Link
                                     v-for="game in activeMatchdayGroup.games"
                                     :key="game.id"
+                                    :href="route('matches.show', game.id)"
                                     class="rounded-xl border border-[#5ca1ff] bg-[#0051b2] px-3 py-3 text-white"
                                 >
                                     <div class="mb-4 flex items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-wide text-[#d8e7ff]">
@@ -648,7 +630,7 @@ function gameStatusLabel(status?: string | null) {
                                             </div>
                                         </div>
                                     </div>
-                                </article>
+                                </Link>
                             </div>
                         </article>
                     </div>

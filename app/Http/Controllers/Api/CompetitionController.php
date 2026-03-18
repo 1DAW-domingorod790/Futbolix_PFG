@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Api\Competition;
+use App\Models\Api\Game;
 use Inertia\Inertia;
 
 class CompetitionController extends Controller
@@ -13,7 +14,11 @@ class CompetitionController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Api/Competitions', [
+        return Inertia::render('Api/Games', [
+            'games' => Game::query()
+                ->with(['competition', 'homeTeam', 'awayTeam'])
+                ->orderBy('utc_date')
+                ->get(),
             'competitions' => Competition::query()
                 ->orderBy('name')
                 ->get(),
