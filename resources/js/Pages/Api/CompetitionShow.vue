@@ -18,6 +18,7 @@ type Team = {
 type Game = {
     id: number | string;
     matchday?: number | null;
+    stage?: string | null;
     home_score?: number | null;
     away_score?: number | null;
     utc_date?: string | null;
@@ -30,6 +31,7 @@ type Game = {
 
 type Competition = {
     id: number | string;
+    external_id?: number | string | null;
     name?: string | null;
     code?: string | null;
     type?: string | null;
@@ -52,6 +54,74 @@ const props = defineProps<{
 const activeTab = ref<'teams' | 'matchdays'>('teams');
 const selectedMatchdayKey = ref<string>('');
 
+const stageAwareCompetitionIds = new Set([2000, 2001]);
+
+const stageOrder: Record<string, number> = {
+    LEAGUE_STAGE: 0,
+    PLAYOFFS: 1,
+    LAST_16: 2,
+    QUARTER_FINALS: 3,
+    QUEARTER_FINALS: 3,
+    SEMI_FINALS: 4,
+    FINAL: 5,
+};
+
+const isStageAwareCompetition = computed(() =>
+    stageAwareCompetitionIds.has(Number(props.competition.external_id)),
+);
+
+function normalizeStage(stage?: string | null) {
+    return stage || 'UNASSIGNED';
+}
+
+function stageLabel(stage?: string | null) {
+    switch (normalizeStage(stage)) {
+        case 'LEAGUE_STAGE':
+            return 'Fase de liga';
+        case 'PLAYOFFS':
+            return 'Playoffs';
+        case 'LAST_16':
+            return 'Octavos';
+        case 'QUARTER_FINALS':
+        case 'QUEARTER_FINALS':
+            return 'Cuartos';
+        case 'SEMI_FINALS':
+            return 'Semifinales';
+        case 'FINAL':
+            return 'Final';
+        default:
+            return 'Fase sin definir';
+    }
+}
+
+function buildMatchdayGroupKey(game: Game) {
+    const matchdayKey = game.matchday ? `matchday-${game.matchday}` : 'matchday-unassigned';
+
+    if (!isStageAwareCompetition.value) {
+        return matchdayKey;
+    }
+
+    return `${normalizeStage(game.stage)}-${matchdayKey}`;
+}
+
+function buildMatchdayGroupLabel(game: Game) {
+    if (!isStageAwareCompetition.value) {
+        return game.matchday ? `Jornada ${game.matchday}` : 'Partidos sin jornada';
+    }
+
+    const baseStageLabel = stageLabel(game.stage);
+
+    if (normalizeStage(game.stage) === 'LEAGUE_STAGE' && game.matchday) {
+        return `${baseStageLabel} · Jornada ${game.matchday}`;
+    }
+
+    if (game.matchday) {
+        return `${baseStageLabel} · Bloque ${game.matchday}`;
+    }
+
+    return baseStageLabel;
+}
+
 const sortedTeams = computed(() =>
     [...(props.competition.teams ?? [])].sort((a, b) =>
         (a.name ?? '').localeCompare(b.name ?? '', 'es'),
@@ -60,6 +130,16 @@ const sortedTeams = computed(() =>
 
 const sortedGames = computed(() =>
     [...(props.competition.games ?? [])].sort((a, b) => {
+        if (isStageAwareCompetition.value) {
+            const stageDiff =
+                (stageOrder[normalizeStage(a.stage)] ?? Number.MAX_SAFE_INTEGER) -
+                (stageOrder[normalizeStage(b.stage)] ?? Number.MAX_SAFE_INTEGER);
+
+            if (stageDiff !== 0) {
+                return stageDiff;
+            }
+        }
+
         const matchdayA = a.matchday ?? Number.MAX_SAFE_INTEGER;
         const matchdayB = b.matchday ?? Number.MAX_SAFE_INTEGER;
 
@@ -77,19 +157,21 @@ const matchdayGroups = computed(() => {
         {
             key: string;
             matchday: number | null;
+            stage: string | null;
             label: string;
             games: Game[];
         }
     >();
 
     sortedGames.value.forEach((game) => {
-        const key = game.matchday ? `matchday-${game.matchday}` : 'matchday-unassigned';
+        const key = buildMatchdayGroupKey(game);
 
         if (!groups.has(key)) {
             groups.set(key, {
                 key,
                 matchday: game.matchday ?? null,
-                label: game.matchday ? `Jornada ${game.matchday}` : 'Partidos sin jornada',
+                stage: game.stage ?? null,
+                label: buildMatchdayGroupLabel(game),
                 games: [],
             });
         }
@@ -126,7 +208,9 @@ function resolveInitialMatchdayKey() {
     }
 
     const currentMatchdayKey = props.competition.currentMatchDay
-        ? `matchday-${props.competition.currentMatchDay}`
+        ? isStageAwareCompetition.value
+            ? `LEAGUE_STAGE-matchday-${props.competition.currentMatchDay}`
+            : `matchday-${props.competition.currentMatchDay}`
         : '';
 
     const currentMatchdayExists = currentMatchdayKey

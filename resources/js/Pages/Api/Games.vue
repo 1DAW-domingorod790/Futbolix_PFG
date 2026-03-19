@@ -45,6 +45,10 @@ const props = defineProps<{
 
 const selectedDateIndex = ref(0);
 
+function buildDateKey(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 const groupedDates = computed(() => {
     const groups = new Map<
         string,
@@ -61,7 +65,7 @@ const groupedDates = computed(() => {
         }
 
         const date = new Date(game.utc_date);
-        const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const dateKey = buildDateKey(date);
 
         if (!groups.has(dateKey)) {
             groups.set(dateKey, {
@@ -95,10 +99,23 @@ watch(
         }
 
         const today = new Date();
-        const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayKey = buildDateKey(today);
         const todayIndex = dates.findIndex((group) => group.key === todayKey);
 
-        selectedDateIndex.value = todayIndex >= 0 ? todayIndex : 0;
+        if (todayIndex >= 0) {
+            selectedDateIndex.value = todayIndex;
+            return;
+        }
+
+        const todayStart = new Date(today);
+        todayStart.setHours(0, 0, 0, 0);
+
+        const nextAvailableIndex = dates.findIndex(
+            (group) => group.date.getTime() >= todayStart.getTime(),
+        );
+
+        selectedDateIndex.value =
+            nextAvailableIndex >= 0 ? nextAvailableIndex : dates.length - 1;
     },
     { immediate: true },
 );
@@ -233,8 +250,8 @@ const currentDayLabel = computed(() => {
     const today = new Date();
     const selected = activeDateGroup.value.date;
 
-    const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-    const selectedKey = `${selected.getFullYear()}-${selected.getMonth()}-${selected.getDate()}`;
+    const todayKey = buildDateKey(today);
+    const selectedKey = buildDateKey(selected);
 
     if (todayKey === selectedKey) {
         return 'Hoy';
