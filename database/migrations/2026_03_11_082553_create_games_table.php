@@ -34,6 +34,8 @@ return new class extends Migration
 
             $table->integer('matchday')->nullable();
 
+            $table->string('stage')->nullable();
+
             $table->dateTime('utc_date');
 
             $table->string('status');

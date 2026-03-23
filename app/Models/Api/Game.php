@@ -12,6 +12,7 @@ class Game extends Model
         'home_team_id',
         'away_team_id',
         'matchday',
+        'stage',
         'home_score',
         'away_score',
         'utc_date',
