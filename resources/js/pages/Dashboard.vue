@@ -14,7 +14,16 @@ import { Head, Link } from '@inertiajs/vue3';
                 <!-- Bienvenida -->
                 <div class="mb-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-futbolix-dark p-6 shadow-sm">
                     <div class="flex items-center gap-4">
-                        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-futbolix-green text-xl font-bold text-white shadow-lg shadow-futbolix-green/30">
+                        <img
+                            v-if="$page.props.auth.user.avatar_url"
+                            :src="$page.props.auth.user.avatar_url"
+                            :alt="$page.props.auth.user.name"
+                            class="h-14 w-14 shrink-0 rounded-full object-cover shadow-lg"
+                        />
+                        <div
+                            v-else
+                            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-futbolix-green text-xl font-bold text-white shadow-lg shadow-futbolix-green/30"
+                        >
                             {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
                         </div>
                         <div>

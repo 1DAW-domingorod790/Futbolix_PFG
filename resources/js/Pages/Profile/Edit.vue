@@ -59,7 +59,7 @@ const activeTab = ref('profile');
                         <button
                             @click="activeTab = 'profile'"
                             class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none"
-                            :class="activeTab === 'profile' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
+                            :class="activeTab === 'profile' ? 'text-green-600 dark:text-green-400' : 'text-black/50 dark:text-slate-400 hover:text-black dark:hover:text-slate-200'"
                         >
                             <div class="flex items-center justify-center gap-2">
                                 <div class="h-2 w-2 rounded-full bg-green-500"></div>
@@ -72,7 +72,7 @@ const activeTab = ref('profile');
                         <button
                             @click="activeTab = 'password'"
                             class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none border-l border-gray-200 dark:border-slate-700"
-                            :class="activeTab === 'password' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
+                            :class="activeTab === 'password' ? 'text-blue-600 dark:text-blue-400' : 'text-black/50 dark:text-slate-400 hover:text-black dark:hover:text-slate-200'"
                         >
                             <div class="flex items-center justify-center gap-2">
                                 <div class="h-2 w-2 rounded-full bg-blue-500"></div>
@@ -85,7 +85,7 @@ const activeTab = ref('profile');
                         <button
                             @click="activeTab = 'delete'"
                             class="relative flex-1 px-4 py-4 text-sm font-medium transition-colors duration-200 focus:outline-none border-l border-gray-200 dark:border-slate-700"
-                            :class="activeTab === 'delete' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'"
+                            :class="activeTab === 'delete' ? 'text-red-600 dark:text-red-400' : 'text-black/50 dark:text-slate-400 hover:text-black dark:hover:text-slate-200'"
                         >
                             <div class="flex items-center justify-center gap-2">
                                 <div class="h-2 w-2 rounded-full bg-red-500"></div>

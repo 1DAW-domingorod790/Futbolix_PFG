@@ -36,11 +36,11 @@ const updatePassword = () => {
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+            <h2 class="text-lg font-medium text-black dark:text-white">
                 Cambiar Contraseña
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">
+            <p class="mt-1 text-sm text-black/60 dark:text-slate-400">
                 Ensure your account is using a long, random password to stay
                 secure.
             </p>
@@ -48,7 +48,7 @@ const updatePassword = () => {
 
         <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
             <div>
-                <InputLabel for="current_password" value="Contraseña Actual" class="text-gray-700 dark:text-slate-300" />
+                <InputLabel for="current_password" value="Contraseña Actual" class="text-black dark:text-slate-300" />
 
                 <TextInput
                     id="current_password"
@@ -66,7 +66,7 @@ const updatePassword = () => {
             </div>
 
             <div>
-                <InputLabel for="password" value="Nueva Contraseña" class="text-gray-700 dark:text-slate-300" />
+                <InputLabel for="password" value="Nueva Contraseña" class="text-black dark:text-slate-300" />
 
                 <TextInput
                     id="password"
@@ -84,7 +84,7 @@ const updatePassword = () => {
                 <InputLabel
                     for="password_confirmation"
                     value="Confirmar Contraseña"
-                    class="text-gray-700 dark:text-slate-300"
+                    class="text-black dark:text-slate-300"
                 />
 
                 <TextInput
@@ -112,7 +112,7 @@ const updatePassword = () => {
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600 dark:text-slate-400"
+                        class="text-sm text-black/60 dark:text-slate-400"
                     >
                         ¡Guardado!
                     </p>

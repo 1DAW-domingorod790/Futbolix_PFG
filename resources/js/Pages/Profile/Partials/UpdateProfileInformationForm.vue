@@ -25,8 +25,8 @@ const form = useForm({
 <template>
     <section class="w-full">
         <header class="mb-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Información Personal</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
+            <h2 class="text-xl font-bold text-black dark:text-white">Información Personal</h2>
+            <p class="mt-1 text-sm text-black/60 dark:text-slate-400">
                 Actualiza tu nombre y dirección de correo electrónico.
             </p>
         </header>
@@ -37,7 +37,7 @@ const form = useForm({
         >
             <!-- Campo Nombre -->
             <div class="group">
-                <InputLabel for="name" value="Nombre" class="mb-1.5 text-sm font-semibold text-gray-700 dark:text-slate-300"
+                <InputLabel for="name" value="Nombre" class="mb-1.5 text-sm font-semibold text-black dark:text-slate-300"
                 />
                 <div class="relative">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -60,7 +60,7 @@ const form = useForm({
 
             <!-- Campo Email -->
             <div class="group">
-                <InputLabel for="email" value="Correo Electrónico" class="mb-1.5 text-sm font-semibold text-gray-700 dark:text-slate-300"/>
+                <InputLabel for="email" value="Correo Electrónico" class="mb-1.5 text-sm font-semibold text-black dark:text-slate-300"/>
                 <div class="relative">
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
