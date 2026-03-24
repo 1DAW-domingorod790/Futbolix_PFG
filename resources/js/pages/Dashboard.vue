@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { route } from 'ziggy-js';
 </script>
 
 <template>
@@ -38,7 +39,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
                 <!-- Cards de acceso rápido -->
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" :class="$page.props.auth.is_admin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'">
-                    <Link :href="route('matches.index')" class="card-sport p-6 block hover:border-futbolix-green transition">
+                    <Link :href="route('matches.index')" class="card-sport p-6">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-futbolix-green/20">
                             <svg class="h-5 w-5 text-futbolix-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -49,7 +50,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
                         <p class="text-sm text-slate-500 dark:text-slate-400">Consulta clasificaciones y resultados de las 5 grandes ligas.</p>
                     </Link>
 
-                    <Link :href="route('tournaments.index')" class="card-sport p-6 block hover:border-futbolix-green transition">
+                    <Link :href="route('tournaments.index')" class="card-sport p-6">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-futbolix-gold/20">
                             <svg class="h-5 w-5 text-futbolix-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -60,7 +61,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
                         <p class="text-sm text-slate-500 dark:text-slate-400">Crea y gestiona tus propias competiciones personalizadas.</p>
                     </Link>
 
-                    <Link :href="route('profile.edit')" class="card-sport p-6 block hover:border-futbolix-green transition">
+                    <Link :href="route('profile.edit')" class="card-sport p-6">
                         <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20">
                             <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
