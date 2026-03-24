@@ -3,17 +3,19 @@ import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { route } from 'ziggy-js';
+import { User } from '@/types';
 
-defineProps({
-    users: Array,
-});
+defineProps<{
+    users: User[];
+}>();
 
-const editingUser = ref(null);
+const editingUser = ref<User | null>(null);
 const creatingUser = ref(false);
 const editForm = useForm({ name: '', email: '', role_name: 'user'});
 const createForm = useForm({ name: '', email: '', password: '', role_name: 'user'});
 
-function openEdit(user) {
+function openEdit(user: any) {
     editingUser.value = user;
     editForm.name = user.name;
     editForm.email = user.email;
@@ -26,12 +28,14 @@ function closeEdit() {
 }
 
 function saveUser() {
+    if (!editingUser.value) return;
+    
     editForm.patch(route('admin.users.update', editingUser.value.id), {
         onSuccess: () => closeEdit(),
     });
 }
 
-function deleteUser(user) {
+function deleteUser(user: any) {
     if (confirm(`¿Seguro que quieres eliminar a "${user.name}"? Esta acción no se puede deshacer.`)) {
         router.delete(route('admin.users.destroy', user.id));
     }

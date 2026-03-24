@@ -20,10 +20,11 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string',
             'avatar_path' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
             'role_name' => 'required|in:user,admin',
         ]);
+
 
         $avatarPath = $request->file('avatar_path')
             ? $request->file('avatar_path')->store('avatars', 'public')

@@ -3,16 +3,26 @@ import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-const props = defineProps({
-    teams: {
-        type: Array,
-        default: () => [],
-    },
+export interface Team {
+    id: number;
+    name: string;
+    shortname?: string | null;
+    tla?: string | null;
+    crest?: string | null;
+    founded?: number | string | null;
+    venue?: string | null;
+    external_id?: number | string | null;
+}
+
+const props = withDefaults(defineProps<{
+    teams?: Team[];
+}>(), {
+    teams: () => [],
 });
 
 const totalTeams = computed(() => props.teams.length);
-const teamsWithVenue = computed(() => props.teams.filter((team) => team.venue).length);
-const teamsWithFoundationYear = computed(() => props.teams.filter((team) => team.founded).length);
+const teamsWithVenue = computed(() => props.teams.filter((team: Team) => team.venue).length);
+const teamsWithFoundationYear = computed(() => props.teams.filter((team: Team) => team.founded).length);
 </script>
 
 <template>

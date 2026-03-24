@@ -23,7 +23,14 @@ class Team extends Model
 
     public function competitions()
     {
-        return $this->belongsToMany(Competition::class);
+        return $this->belongsToMany(Competition::class)->withPivot([
+            'standing',
+            'points',
+            'won',
+            'draw',
+            'lost',
+            'goal_difference',
+        ]);
     }
 
     public function homeGames()

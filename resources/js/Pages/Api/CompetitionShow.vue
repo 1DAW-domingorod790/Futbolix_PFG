@@ -13,6 +13,14 @@ type Team = {
     founded?: number | null;
     venue?: string | null;
     external_id?: number | string | null;
+    pivot?: {
+        standing?: number | null;
+        points?: number | null;
+        won?: number | null;
+        draw?: number | null;
+        lost?: number | null;
+        goal_difference?: number | null;
+    } | null;
 };
 
 type Game = {
@@ -47,11 +55,20 @@ type Competition = {
     games_count?: number;
 };
 
+type QualificationRule = {
+    start: number;
+    end: number;
+    label: string;
+    tone: 'blue' | 'orange' | 'green' | 'playoff';
+};
+
+type QualificationTone = 'leader' | 'blue' | 'orange' | 'green' | 'playoff' | 'red' | 'neutral';
+
 const props = defineProps<{
     competition: Competition;
 }>();
 
-const activeTab = ref<'teams' | 'matchdays'>('teams');
+const activeTab = ref<'teams' | 'standings' | 'matchdays'>('teams');
 const selectedMatchdayKey = ref<string>('');
 
 const stageAwareCompetitionIds = new Set([2000, 2001]);
@@ -126,6 +143,187 @@ const sortedTeams = computed(() =>
     [...(props.competition.teams ?? [])].sort((a, b) =>
         (a.name ?? '').localeCompare(b.name ?? '', 'es'),
     ),
+);
+
+function teamStanding(team?: Team | null) {
+    return team?.pivot?.standing ?? null;
+}
+
+const qualificationRules = computed<QualificationRule[]>(() => {
+    switch (Number(props.competition.external_id)) {
+        case 2021: // Premier League
+        case 2014: // LaLiga
+            return [
+                { start: 2, end: 4, label: 'Champions League', tone: 'blue' },
+                { start: 5, end: 5, label: 'Europa League', tone: 'orange' },
+                { start: 6, end: 6, label: 'Conference League', tone: 'green' },
+            ];
+        case 2002: // Bundesliga
+        case 2019: // Serie A
+            return [
+                { start: 2, end: 4, label: 'Champions League', tone: 'blue' },
+                { start: 5, end: 5, label: 'Europa League', tone: 'orange' },
+                { start: 6, end: 6, label: 'Conference League', tone: 'green' },
+            ];
+        case 2015: // Ligue 1
+            return [
+                { start: 2, end: 3, label: 'Champions League', tone: 'blue' },
+                { start: 4, end: 4, label: 'Ronda previa Champions', tone: 'playoff' },
+                { start: 5, end: 5, label: 'Europa League', tone: 'orange' },
+            ];
+        default:
+            return [];
+    }
+});
+
+const qualificationLegend = computed(() => {
+    if (!qualificationRules.value.length) {
+        return [];
+    }
+
+    return [
+        { label: '1 Lider', tone: 'leader' },
+        ...qualificationRules.value.map((rule) => ({
+            label: rule.start === rule.end ? `${rule.start} ${rule.label}` : `${rule.start}-${rule.end} ${rule.label}`,
+            tone: rule.tone,
+        })),
+        { label: 'Ultimos 3 Descenso', tone: 'red' },
+    ];
+});
+
+function qualificationRuleForStanding(standing?: number | null) {
+    if (standing === null || standing === undefined) {
+        return null;
+    }
+
+    return qualificationRules.value.find((rule) => standing >= rule.start && standing <= rule.end) ?? null;
+}
+
+function qualificationLabel(standing?: number | null) {
+    if (standing === null || standing === undefined) {
+        return null;
+    }
+
+    if (standing === 1) {
+        return 'Lider';
+    }
+
+    const rule = qualificationRuleForStanding(standing);
+
+    if (rule) {
+        return rule.label;
+    }
+
+    if (qualificationRules.value.length && rankedTeamsCount.value >= 3 && standing >= rankedTeamsCount.value - 2) {
+        return 'Descenso';
+    }
+
+    return null;
+}
+
+function qualificationTone(standing?: number | null): QualificationTone {
+    if (standing === 1) {
+        return 'leader';
+    }
+
+    const rule = qualificationRuleForStanding(standing);
+
+    if (rule) {
+        return rule.tone;
+    }
+
+    if (standing !== null && standing !== undefined && qualificationRules.value.length && rankedTeamsCount.value >= 3 && standing >= rankedTeamsCount.value - 2) {
+        return 'red';
+    }
+
+    return 'neutral';
+}
+
+
+function tableRowToneClass(tone: QualificationTone) {
+    switch (tone) {
+        case 'leader':
+            return 'bg-[#7c5a00]';
+        case 'blue':
+            return 'bg-[#1e4fa3]';
+        case 'playoff':
+            return 'bg-[#0c4a6e]';
+        case 'orange':
+            return 'bg-[#9a3412]';
+        case 'green':
+            return 'bg-[#166534]';
+        case 'red':
+            return 'bg-[#7f1d1d]';
+        default:
+            return 'bg-[#082a5b]';
+    }
+}
+
+function standingBadgeToneClass(tone: QualificationTone) {
+    switch (tone) {
+        case 'leader':
+            return 'bg-[#fef3c7] text-[#92400e]';
+        case 'blue':
+            return 'bg-[#dbeafe] text-[#1d4ed8]';
+        case 'playoff':
+            return 'bg-[#e0f2fe] text-[#0369a1]';
+        case 'orange':
+            return 'bg-[#ffedd5] text-[#c2410c]';
+        case 'green':
+            return 'bg-[#dcfce7] text-[#166534]';
+        case 'red':
+            return 'bg-[#fee2e2] text-[#991b1b]';
+        default:
+            return 'bg-white text-[#00357b]';
+    }
+}
+
+function qualificationTextToneClass(tone: QualificationTone) {
+    switch (tone) {
+        case 'leader':
+            return 'text-[#fde68a]';
+        case 'blue':
+            return 'text-[#bfdbfe]';
+        case 'playoff':
+            return 'text-[#bae6fd]';
+        case 'orange':
+            return 'text-[#fdba74]';
+        case 'green':
+            return 'text-[#86efac]';
+        case 'red':
+            return 'text-[#fca5a5]';
+        default:
+            return 'text-[#dbeafe]';
+    }
+}
+
+const rankedTeams = computed(() =>
+    [...(props.competition.teams ?? [])].sort((a, b) => {
+        const standingA = teamStanding(a);
+        const standingB = teamStanding(b);
+
+        if (standingA === null && standingB === null) {
+            return (a.name ?? '').localeCompare(b.name ?? '', 'es');
+        }
+
+        if (standingA === null) {
+            return 1;
+        }
+
+        if (standingB === null) {
+            return -1;
+        }
+
+        if (standingA !== standingB) {
+            return standingA - standingB;
+        }
+
+        return (a.name ?? '').localeCompare(b.name ?? '', 'es');
+    }),
+);
+
+const rankedTeamsCount = computed(() =>
+    rankedTeams.value.filter((team) => teamStanding(team) !== null).length,
 );
 
 const sortedGames = computed(() =>
@@ -478,6 +676,16 @@ function gameStatus(game: Game) {
                         <button
                             type="button"
                             class="rounded-full border px-4 py-2 text-sm font-black uppercase tracking-wide transition"
+                            :class="activeTab === 'standings'
+                                ? 'border-[#ffd400] bg-[#ffd400] text-[#1d1d1d]'
+                                : 'border-[#5ca1ff] bg-[#0051b2] text-white hover:bg-[#0b5fc7]'"
+                            @click="activeTab = 'standings'"
+                        >
+                            Clasificacion
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-full border px-4 py-2 text-sm font-black uppercase tracking-wide transition"
                             :class="activeTab === 'matchdays'
                                 ? 'border-[#ffd400] bg-[#ffd400] text-[#1d1d1d]'
                                 : 'border-[#5ca1ff] bg-[#0051b2] text-white hover:bg-[#0b5fc7]'"
@@ -554,6 +762,104 @@ function gameStatus(game: Game) {
                         class="rounded-2xl border-2 border-dashed border-[#5ca1ff] bg-white px-6 py-12 text-center text-sm font-semibold text-[#4a6ea9]"
                     >
                         No hay equipos asociados a esta competición todavía.
+                    </div>
+                </section>
+
+                <section
+                    v-else-if="activeTab === 'standings'"
+                    class="rounded-[2rem] border-4 border-[#083b8d] bg-[#eef1f5] p-4 shadow-[0_18px_45px_rgba(8,59,141,0.18)] lg:p-5"
+                >
+                    <div class="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <h3 class="text-xl font-black uppercase tracking-wide text-[#00357b]">
+                                Clasificacion
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div v-if="rankedTeams.length" class="space-y-4">
+
+                        <article class="overflow-hidden rounded-[1.5rem] border-4 border-[#042b67] bg-[#00357b] shadow-[0_12px_30px_rgba(3,34,82,0.22)]">
+                            <div class="overflow-x-auto">
+                                <div class="min-w-[720px]">
+                                    <div class="grid grid-cols-[58px_56px_minmax(150px,1.4fr)_62px_62px_62px_62px_72px] gap-2 border-b border-[#0c4ea9] px-2 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#d8e7ff] sm:grid-cols-[64px_60px_minmax(180px,1.5fr)_68px_68px_68px_68px_84px] sm:px-3 sm:py-2.5 sm:text-[11px]">
+                                        <span>POS</span>
+                                        <span>EQUIPO</span>
+                                        <span></span>
+                                        <span class="text-center">PTS</span>
+                                        <span class="text-center">V</span>
+                                        <span class="text-center">D</span>
+                                        <span class="text-center">E</span>
+                                        <span class="text-center">GD</span>
+                                    </div>
+
+                                    <div v-if="rankedTeamsCount" class="divide-y divide-[#0c4ea9]">
+                                        <div
+                                            v-for="team in rankedTeams"
+                                            :key="team.id"
+                                            class="grid grid-cols-[58px_56px_minmax(150px,1.4fr)_62px_62px_62px_62px_72px] items-center gap-2 px-2 py-2 text-white sm:grid-cols-[64px_60px_minmax(180px,1.5fr)_68px_68px_68px_68px_84px] sm:px-3 sm:py-2.5"
+                                            :class="tableRowToneClass(qualificationTone(teamStanding(team)))"
+                                        >
+                                            <div class="flex items-center">
+                                                <span
+                                                    class="inline-flex min-w-[40px] items-center justify-center rounded-full px-2 py-1.5 text-xs font-black sm:min-w-[48px] sm:px-3 sm:py-2 sm:text-sm"
+                                                    :class="standingBadgeToneClass(qualificationTone(teamStanding(team)))"
+                                                >
+                                                    {{ teamStanding(team) ?? '--' }}
+                                                </span>
+                                            </div>
+
+                                            <div class="flex items-center">
+                                                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 sm:h-12 sm:w-12 sm:rounded-2xl sm:p-2">
+                                                    <img
+                                                        v-if="team.crest"
+                                                        :src="team.crest"
+                                                        :alt="team.name || 'Equipo'"
+                                                        class="h-full w-full object-contain"
+                                                    >
+                                                    <span v-else class="text-sm font-black text-[#00357b]">
+                                                        {{ teamInitials(team) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="min-w-0">
+                                                <p class="truncate text-xs font-black sm:text-sm">
+                                                    {{ team.name || 'Equipo sin nombre' }}
+                                                </p>
+                                                <p
+                                                    v-if="qualificationLabel(teamStanding(team))"
+                                                    class="mt-0.5 text-[10px] font-black uppercase tracking-wide sm:mt-1 sm:text-[11px]"
+                                                    :class="qualificationTextToneClass(qualificationTone(teamStanding(team)))"
+                                                >
+                                                    {{ qualificationLabel(teamStanding(team)) }}
+                                                </p>
+                                            </div>
+
+                                            <p class="text-center text-xs font-black sm:text-sm">{{ team.pivot?.points ?? '--' }}</p>
+                                            <p class="text-center text-xs font-black sm:text-sm">{{ team.pivot?.won ?? '--' }}</p>
+                                            <p class="text-center text-xs font-black sm:text-sm">{{ team.pivot?.lost ?? '--' }}</p>
+                                            <p class="text-center text-xs font-black sm:text-sm">{{ team.pivot?.draw ?? '--' }}</p>
+                                            <p class="text-center text-xs font-black sm:text-sm">{{ team.pivot?.goal_difference ?? '--' }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        v-else
+                                        class="px-6 py-12 text-center text-sm font-semibold text-[#d8e7ff]"
+                                    >
+                                        Esta competicion todavia no tiene posiciones sincronizadas.
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div
+                        v-else
+                        class="rounded-2xl border-2 border-dashed border-[#5ca1ff] bg-white px-6 py-12 text-center text-sm font-semibold text-[#4a6ea9]"
+                    >
+                        No hay equipos asociados a esta competicion todavia.
                     </div>
                 </section>
 
