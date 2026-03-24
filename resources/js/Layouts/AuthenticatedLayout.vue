@@ -6,7 +6,7 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
-import { useTheme } from '@/Composables/useTheme';
+import { useTheme } from '@/composables/useTheme';
 
 const showingNavigationDropdown = ref(false);
 const { isDark, toggle } = useTheme();
