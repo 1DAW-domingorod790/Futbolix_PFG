@@ -1,7 +1,6 @@
-<script setup>
-import ApplicationLogoIconWhite from '@/Components/ApplicationLogoIconWhite.vue';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+<script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 </script>
 
 <template>

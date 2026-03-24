@@ -1,7 +1,7 @@
-<script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+<script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
     teams: {

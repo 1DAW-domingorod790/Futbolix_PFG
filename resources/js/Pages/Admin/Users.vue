@@ -1,8 +1,8 @@
-<script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Head, useForm, router, Link } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 defineProps({
     users: Array,
