@@ -28,8 +28,8 @@
 
     /* Tarjeta oscura estilo deportivo */
     .card-sport {
-        @apply rounded-xl bg-futbolix-dark border border-slate-700
-               shadow-lg overflow-hidden;
+        @apply rounded-xl bg-white dark:bg-futbolix-dark border border-slate-200 dark:border-slate-700
+               shadow-sm dark:shadow-lg overflow-hidden;
     }
 
     /* Badge de liga/torneo */

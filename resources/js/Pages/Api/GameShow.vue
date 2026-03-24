@@ -2,8 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { route } from 'ziggy-js';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import MatchPredictionCard from '@/Components/MatchPredictionCard.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 type Team = {
     id: number | string;
@@ -202,18 +202,6 @@ function matchStatusTone(status?: string | null) {
     return 'border-[#c8d5e6] bg-white text-[#00357b]';
 }
 
-function formatDate(date?: string | null) {
-    if (!date) {
-        return 'Pendiente';
-    }
-
-    return new Date(date).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    });
-}
-
 function formatDateTime(date?: string | null) {
     if (!date) {
         return 'Sin fecha';
@@ -249,10 +237,6 @@ function formatTime(date?: string | null) {
         hour: '2-digit',
         minute: '2-digit',
     });
-}
-
-function venueLabel() {
-    return homeTeam.value?.venue || awayTeam.value?.venue || 'Estadio pendiente';
 }
 
 function isTeamHome(game: Game, teamId?: number | string | null) {

@@ -365,29 +365,17 @@ function competitionTypeLabel(type?: string | null) {
     <Head title="Partidos y competiciones" />
 
     <AuthenticatedLayout>
-        <template #header>
-            <div class="space-y-1">
-                <h2 class="text-xl leading-tight font-semibold text-white">
-                    Partidos y competiciones
-                </h2>
-                <p class="text-sm font-semibold text-white/75">
-                    Consulta los partidos del dia seleccionado y accede a las
-                    competiciones desde la misma pantalla.
-                </p>
-            </div>
-        </template>
-
-        <div class="min-h-screen bg-[#0f172a] px-3 py-4 lg:px-6 lg:py-6">
+        <div class="min-h-screen bg-slate-100 dark:bg-[#0f172a] px-3 py-4 lg:px-6 lg:py-6">
             <div
                 class="mx-auto grid w-full max-w-screen-2xl gap-4 xl:grid-cols-[minmax(0,1.2fr)_620px]"
             >
-                <section class="space-y-4">     
+                <section class="space-y-4">
                     <div
                         class="w-100 mx-auto sticky top-20 z-10 flex items-center gap-2 rounded-xl border-2 bg-[#ffd400] px-3 py-2 shadow-[0_8px_20px_rgba(160,130,0,0.2)] md:max-w-sm"
                     >
                         <button
                             type="button"
-                            class="flex h-7 w-7 items-center justify-center rounded-full text-slate-300 transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
+                            class="flex h-7 w-7 items-center justify-center rounded-full text-black transition hover:bg-black/10 disabled:cursor-not-allowed disabled:opacity-40"
                             :disabled="safeSelectedDateIndex === 0"
                             @click="showPreviousDay"
                         >

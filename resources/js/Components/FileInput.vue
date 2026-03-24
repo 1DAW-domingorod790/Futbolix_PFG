@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 
 const file = ref<File | null>(null);
 
-const props = defineProps<{ modelValue: File | null }>();
+defineProps<{ modelValue: File | null }>();
 const emit = defineEmits<{
   (e: "update:modelValue", file: File | null): void;
 }>();
