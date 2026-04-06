@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->integer('number');
             $table->integer('age')->nullable();
-            $table->foreignId('team_id')->constrained();
+            $table->foreignId('team_id')->constrained('tournament_teams')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tournaments_players');
+        Schema::dropIfExists('tournament_players');
     }
 };

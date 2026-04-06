@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('code')->unique();
             $table->string('name');
-            $table->foreignId('admin_id')->references('id')->on('users');
+            $table->text('description')->nullable();
+            $table->foreignId('admin_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
