@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { route } from 'ziggy-js';           // 🔹 Primero, librerías externas
 import { Head, Link } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { route } from 'ziggy-js';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';  // 🔹 Después, tus componentes locales
 </script>
 
 <template>
