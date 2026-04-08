@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class TournamentPlayer extends Model
 {
     protected $fillable = [
-        'code',
+        'dni',
         'name',
-        'badge',
-        'tournament_id',
+        'number',
+        'age',
+        'team_id',
     ];
 }

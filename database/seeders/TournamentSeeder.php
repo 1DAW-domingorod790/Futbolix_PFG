@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+use App\Models\Role;
 use App\Models\Tournaments\Tournament;
 use App\Models\Tournaments\TournamentPlayer;
 use App\Models\Tournaments\TournamentTeam;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class TournamentSeeder extends Seeder
 {
@@ -15,31 +17,55 @@ class TournamentSeeder extends Seeder
      */
     public function run(): void
     {
-        Tournament::create([
-            'code' => '111111',
-            'name' => 'Liga Fútbol 7 - Dos Hermanas',
-            'admin_id' => 3,
-        ]);
+        $adminRoleId = Role::query()->where('name', 'admin')->value('id')
+            ?? Role::firstOrCreate(['name' => 'admin'])->id;
 
-        TournamentTeam::create([
-            'code' => '111111',
-            'name' => 'Musculitos FC',
-            'tournament_id' => 1,
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@futbolix.test'],
+            [
+                'name' => 'Administrador Futbolix',
+                'role_id' => $adminRoleId,
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
 
-        TournamentPlayer::create([
-            'dni' => '85644963P',
-            'name' => 'Carmelix Villarreal',
-            'number' => 8,
-            'team_id' => 1,
-        ]);
+        $tournament = Tournament::updateOrCreate(
+            ['code' => 111111],
+            [
+                'name' => 'Liga Futbol 7 - Dos Hermanas',
+                'description' => 'Torneo local de prueba para el desarrollo inicial del modulo.',
+                'admin_id' => $admin->id,
+            ]
+        );
 
-        TournamentPlayer::create([
-            'dni' => '79044463B',
-            'name' => 'Domingix Rodriguez',
-            'number' => 10,
-            'age' => 20,
-            'team_id' => 1,
-        ]);
+        $team = TournamentTeam::updateOrCreate(
+            ['code' => 111111],
+            [
+                'name' => 'Musculitos FC',
+                'badge' => null,
+                'tournament_id' => $tournament->id,
+            ]
+        );
+
+        TournamentPlayer::updateOrCreate(
+            ['dni' => '85644963P'],
+            [
+                'name' => 'Carmelix Villarreal',
+                'number' => 8,
+                'age' => null,
+                'team_id' => $team->id,
+            ]
+        );
+
+        TournamentPlayer::updateOrCreate(
+            ['dni' => '79044463B'],
+            [
+                'name' => 'Domingix Rodriguez',
+                'number' => 10,
+                'age' => 20,
+                'team_id' => $team->id,
+            ]
+        );
     }
 }

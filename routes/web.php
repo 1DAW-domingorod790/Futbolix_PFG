@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Api\CompetitionController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Tournaments\TournamentController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -46,9 +47,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/tournaments', function () {
-        return Inertia::render('Tournaments/Index');
-    })->name('tournaments.index');
+    Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
+    Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
+    Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
 
     Route::post('/api/predictions/match', [MatchPredictionController::class, 'store'])
         ->name('predictions.match');
