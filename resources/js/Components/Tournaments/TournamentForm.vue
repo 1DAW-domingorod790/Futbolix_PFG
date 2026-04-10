@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import FileInput from '@/Components/FileInput.vue';
 import InputError from '@/Components/InputError.vue';
 
 defineProps<{
     name: string;
     description: string;
-    errors: Partial<Record<'name' | 'description', string>>;
+    logoPath: File | null;
+    errors: Partial<Record<'name' | 'description' | 'logo_path', string>>;
     processing?: boolean;
     cancelHref: string;
     submitLabel?: string;
@@ -15,6 +17,7 @@ const emit = defineEmits<{
     (event: 'submit'): void;
     (event: 'update:name', value: string): void;
     (event: 'update:description', value: string): void;
+    (event: 'update:logoPath', value: File | null): void;
 }>();
 </script>
 
@@ -62,6 +65,24 @@ const emit = defineEmits<{
                     <span>{{ description.length }}/1000</span>
                 </div>
                 <InputError class="mt-2" :message="errors.description" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Logo del torneo (opcional)
+                </label>
+                <div class="mt-2">
+                    <FileInput
+                        :model-value="logoPath"
+                        input-id="tournament-logo"
+                        label="Subir logo"
+                        @update:model-value="emit('update:logoPath', $event)"
+                    />
+                </div>
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Si no subes uno, se usara la imagen por defecto del torneo.
+                </p>
+                <InputError class="mt-2" :message="errors.logo_path" />
             </div>
         </div>
 

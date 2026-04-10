@@ -4,7 +4,7 @@ namespace App\Http\Requests\Tournaments;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTournamentRequest extends FormRequest
+class UpdateTournamentSettingsRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,19 +19,8 @@ class StoreTournamentRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'is_public' => ['nullable', 'boolean'],
             'logo_path' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg,webp'],
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return [
-            'name' => 'nombre del torneo',
-            'description' => 'descripcion',
-            'logo_path' => 'logo del torneo',
         ];
     }
 }

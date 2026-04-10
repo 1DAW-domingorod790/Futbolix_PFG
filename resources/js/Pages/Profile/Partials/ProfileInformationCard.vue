@@ -23,8 +23,8 @@ const user = usePage().props.auth.user;
 
         <!-- Nombre y rol -->
         <div class="mt-4 text-center">
-            <h3 class="text-lg font-bold text-gray-900">{{ user.name }}</h3>
-            <p class="text-sm text-gray-500">{{ user.email }}</p>
+            <h3 class="text-lg font-bold text-black dark:text-white">{{ user.name }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</p>
         </div>
 
     </div>

@@ -13,7 +13,7 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    avatar_path: '',
+    avatar_path: null as File | null,
     captcha: '',
 });
 

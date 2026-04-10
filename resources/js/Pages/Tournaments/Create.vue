@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import TournamentForm from '@/Components/Tournaments/TournamentForm.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { route } from 'ziggy-js';
 
 const form = useForm({
     name: '',
     description: '',
+    logo_path: null as File | null,
 });
 
 function submit() {
-    form.post(route('tournaments.store'));
+    form.post(route('tournaments.store'), {
+        forceFormData: true,
+    });
 }
 </script>
 
@@ -24,14 +27,15 @@ function submit() {
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-futbolix-gold">Nuevo torneo</p>
                     <h1 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Crear torneo</h1>
                     <p class="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                        Completa los datos basicos para registrar el torneo. Mas adelante podremos ampliar esta ficha
-                        con equipos, formato de competicion, jornadas y clasificacion.
+                        Completa los datos basicos para registrar el torneo. Se creara oculto por defecto y podras
+                        subir un logo desde ahora o mas adelante.
                     </p>
                 </section>
 
                 <TournamentForm
                     :name="form.name"
                     :description="form.description"
+                    :logo-path="form.logo_path"
                     :errors="form.errors"
                     :processing="form.processing"
                     :cancel-href="route('tournaments.index')"
@@ -39,6 +43,7 @@ function submit() {
                     @submit="submit"
                     @update:name="form.name = $event"
                     @update:description="form.description = $event"
+                    @update:logo-path="form.logo_path = $event"
                 />
             </div>
         </div>
