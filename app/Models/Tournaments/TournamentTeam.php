@@ -3,6 +3,8 @@
 namespace App\Models\Tournaments;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TournamentTeam extends Model
 {
@@ -11,5 +13,34 @@ class TournamentTeam extends Model
         'name',
         'badge',
         'tournament_id',
+        'position',
+        'played',
+        'won',
+        'drawn',
+        'lost',
+        'goals_for',
+        'goals_against',
+        'goal_difference',
+        'points',
     ];
+
+    public function tournament(): BelongsTo
+    {
+        return $this->belongsTo(Tournament::class);
+    }
+
+    public function players(): HasMany
+    {
+        return $this->hasMany(TournamentPlayer::class, 'team_id');
+    }
+
+    public function homeMatches(): HasMany
+    {
+        return $this->hasMany(TournamentMatch::class, 'home_team_id');
+    }
+
+    public function awayMatches(): HasMany
+    {
+        return $this->hasMany(TournamentMatch::class, 'away_team_id');
+    }
 }

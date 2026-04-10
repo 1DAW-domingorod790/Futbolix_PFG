@@ -47,7 +47,7 @@ const { isDark, toggle } = useTheme();
                                 </NavLink>
                                 <NavLink
                                     :href="route('tournaments.index')"
-                                    :active="route().current('tournaments.index')"
+                                    :active="route().current('tournaments.*')"
                                 >
                                     Torneos
                                 </NavLink>
