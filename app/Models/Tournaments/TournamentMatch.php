@@ -17,12 +17,16 @@ class TournamentMatch extends Model
         'away_team_id',
         'home_score',
         'away_score',
+        'home_scorers',
+        'away_scorers',
     ];
 
     protected function casts(): array
     {
         return [
             'scheduled_at' => 'datetime',
+            'home_scorers' => 'array',
+            'away_scorers' => 'array',
         ];
     }
 

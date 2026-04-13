@@ -9,13 +9,16 @@ use App\Http\Requests\Tournaments\StoreTournamentTeamRequest;
 use App\Http\Requests\Tournaments\StoreTournamentRequest;
 use App\Http\Requests\Tournaments\UpdateTournamentMatchResultRequest;
 use App\Http\Requests\Tournaments\UpdateTournamentSettingsRequest;
+use App\Http\Requests\Tournaments\UpdateTournamentTeamRequest;
 use App\Models\Tournaments\Tournament;
 use App\Models\Tournaments\TournamentMatch;
 use App\Models\Tournaments\TournamentPlayer;
 use App\Models\Tournaments\TournamentTeam;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,7 +55,9 @@ class TournamentController extends Controller
         $tournament->load([
             'teams.players',
             'matches.homeTeam',
+            'matches.homeTeam.players',
             'matches.awayTeam',
+            'matches.awayTeam.players',
             'admin:id,name',
         ]);
 
@@ -85,6 +90,87 @@ class TournamentController extends Controller
                 'standings' => $standings->values(),
                 'matches' => $matches->values(),
                 'top_scorers' => $topScorers->values(),
+            ],
+        ]);
+    }
+
+    public function showTeam(Tournament $tournament, TournamentTeam $team): Response
+    {
+        abort_unless($this->canAccessTournament($tournament), 403);
+        abort_unless($team->tournament_id === $tournament->id, 404);
+
+        $team->load([
+            'players',
+            'homeMatches.homeTeam',
+            'homeMatches.awayTeam',
+            'awayMatches.homeTeam',
+            'awayMatches.awayTeam',
+            'tournament:id,name,code',
+        ]);
+
+        $canManage = $this->canManageTournament($tournament);
+        $recentMatches = $team->homeMatches
+            ->concat($team->awayMatches)
+            ->sort(function (TournamentMatch $firstMatch, TournamentMatch $secondMatch) {
+                return strtotime((string) $secondMatch->scheduled_at) <=> strtotime((string) $firstMatch->scheduled_at);
+            })
+            ->take(5)
+            ->values()
+            ->map(fn (TournamentMatch $match) => [
+                'id' => $match->id,
+                'scheduled_at' => $match->scheduled_at?->toIso8601String(),
+                'status' => $match->status,
+                'home_score' => $match->home_score,
+                'away_score' => $match->away_score,
+                'home_team' => [
+                    'id' => $match->homeTeam?->id,
+                    'name' => $match->homeTeam?->name,
+                    'badge' => $match->homeTeam?->badge_url,
+                ],
+                'away_team' => [
+                    'id' => $match->awayTeam?->id,
+                    'name' => $match->awayTeam?->name,
+                    'badge' => $match->awayTeam?->badge_url,
+                ],
+            ]);
+
+        return Inertia::render('Tournaments/TeamShow', [
+            'tournament' => [
+                'id' => $tournament->id,
+                'name' => $tournament->name,
+                'code' => $tournament->code,
+                'can_manage' => $canManage,
+            ],
+            'team' => [
+                'id' => $team->id,
+                'code' => $team->code,
+                'name' => $team->name,
+                'badge' => $team->badge_url,
+                'position' => $team->position,
+                'created_at' => $team->created_at?->toIso8601String(),
+                'stats' => [
+                    'played' => $team->played,
+                    'won' => $team->won,
+                    'drawn' => $team->drawn,
+                    'lost' => $team->lost,
+                    'goals_for' => $team->goals_for,
+                    'goals_against' => $team->goals_against,
+                    'goal_difference' => $team->goal_difference,
+                    'points' => $team->points,
+                ],
+                'players' => $team->players
+                    ->sortBy('number')
+                    ->values()
+                    ->map(fn (TournamentPlayer $player) => [
+                        'id' => $player->id,
+                        'name' => $player->name,
+                        'dni' => $player->dni,
+                        'number' => $player->number,
+                        'age' => $player->age,
+                        'goals' => $player->goals ?? 0,
+                        'photo_url' => $player->photo_url,
+                    ]),
+                'recent_matches' => $recentMatches,
             ],
         ]);
     }
@@ -129,6 +215,29 @@ class TournamentController extends Controller
         return redirect()
             ->route('tournaments.show', $tournament)
             ->with('success', 'La configuracion del torneo se ha actualizado.');
+    }
+
+    public function updateTeam(
+        UpdateTournamentTeamRequest $request,
+        Tournament $tournament,
+        TournamentTeam $team,
+    ): RedirectResponse {
+        abort_unless($this->canManageTournament($tournament), 403);
+        abort_unless($team->tournament_id === $tournament->id, 404);
+
+        if ($request->hasFile('badge') && $team->getRawOriginal('badge') && !str_starts_with((string) $team->getRawOriginal('badge'), 'http')) {
+            Storage::disk('public')->delete((string) $team->getRawOriginal('badge'));
+        }
+
+        $team->update([
+            'badge' => $request->hasFile('badge')
+                ? $request->file('badge')->store('teams', 'public')
+                : $team->getRawOriginal('badge'),
+        ]);
+
+        return redirect()
+            ->route('tournaments.teams.show', [$tournament, $team])
+            ->with('success', 'El escudo del equipo se ha actualizado.');
     }
 
     public function storeTeam(StoreTournamentTeamRequest $request, Tournament $tournament): RedirectResponse
@@ -193,6 +302,12 @@ class TournamentController extends Controller
             'team_id' => $team->id,
         ]);
 
+        if ($request->boolean('stay_on_team')) {
+            return redirect()
+                ->route('tournaments.teams.show', [$tournament, $team])
+                ->with('success', 'El jugador se ha anadido correctamente.');
+        }
+
         return redirect()
             ->route('tournaments.show', $tournament)
             ->with('success', 'El jugador se ha anadido correctamente.');
@@ -207,12 +322,41 @@ class TournamentController extends Controller
         abort_unless($match->tournament_id === $tournament->id, 404);
 
         $validated = $request->validated();
+        $match->loadMissing('homeTeam.players', 'awayTeam.players');
 
-        $match->update([
-            'home_score' => $validated['home_score'],
-            'away_score' => $validated['away_score'],
-            'status' => 'FINISHED',
-        ]);
+        $homeScorers = $this->normalizeScorers($validated['home_scorers'] ?? []);
+        $awayScorers = $this->normalizeScorers($validated['away_scorers'] ?? []);
+        $previousHomeScorers = $this->normalizeScorers($match->home_scorers ?? []);
+        $previousAwayScorers = $this->normalizeScorers($match->away_scorers ?? []);
+
+        $this->validateMatchScorers($homeScorers, $match->homeTeam, (int) $validated['home_score'], 'home_scorers');
+        $this->validateMatchScorers($awayScorers, $match->awayTeam, (int) $validated['away_score'], 'away_scorers');
+
+        DB::transaction(function () use (
+            $match,
+            $tournament,
+            $validated,
+            $homeScorers,
+            $awayScorers,
+            $previousHomeScorers,
+            $previousAwayScorers,
+        ) {
+            $match->update([
+                'home_score' => $validated['home_score'],
+                'away_score' => $validated['away_score'],
+                'home_scorers' => $homeScorers,
+                'away_scorers' => $awayScorers,
+                'status' => 'FINISHED',
+            ]);
+
+            $this->recalculateTournamentStandings($tournament);
+            $this->syncPlayerGoalsFromMatchUpdate(
+                $previousHomeScorers,
+                $previousAwayScorers,
+                $homeScorers,
+                $awayScorers,
+            );
+        });
 
         return redirect()
             ->route('tournaments.show', $tournament)
@@ -262,7 +406,7 @@ class TournamentController extends Controller
                 'id' => $team->id,
                 'position' => $team->position,
                 'name' => $team->name,
-                'badge' => $team->badge,
+                'badge' => $team->badge_url,
                 'played' => $team->played,
                 'won' => $team->won,
                 'drawn' => $team->drawn,
@@ -290,7 +434,7 @@ class TournamentController extends Controller
             ->map(fn (TournamentTeam $team) => [
                 'id' => $team->id,
                 'name' => $team->name,
-                'badge' => $team->badge,
+                'badge' => $team->badge_url,
                 'position' => $team->position,
                 'players' => $team->players
                     ->sortBy('number')
@@ -300,9 +444,9 @@ class TournamentController extends Controller
                         'name' => $player->name,
                         'number' => $player->number,
                         'age' => $player->age,
-                        'goals' => $player->goals ?? 0,
-                        'photo_url' => $player->photo_url,
-                    ]),
+                    'goals' => $player->goals ?? 0,
+                    'photo_url' => $player->photo_url,
+                ]),
             ]);
     }
 
@@ -318,7 +462,7 @@ class TournamentController extends Controller
                     'goals' => $player->goals ?? 0,
                     'photo_url' => $player->photo_url,
                     'team_name' => $team->name,
-                    'team_badge' => $team->badge,
+                    'team_badge' => $team->badge_url,
                 ]);
             })
             ->sort(function (array $firstPlayer, array $secondPlayer) {
@@ -349,17 +493,250 @@ class TournamentController extends Controller
                 'status' => $match->status,
                 'home_score' => $match->home_score,
                 'away_score' => $match->away_score,
+                'home_scorers' => collect($match->home_scorers ?? [])
+                    ->map(fn (array $scorer) => [
+                        'player_id' => (int) ($scorer['player_id'] ?? 0),
+                        'goals' => (int) ($scorer['goals'] ?? 0),
+                    ])
+                    ->filter(fn (array $scorer) => $scorer['player_id'] > 0 && $scorer['goals'] > 0)
+                    ->values()
+                    ->all(),
+                'away_scorers' => collect($match->away_scorers ?? [])
+                    ->map(fn (array $scorer) => [
+                        'player_id' => (int) ($scorer['player_id'] ?? 0),
+                        'goals' => (int) ($scorer['goals'] ?? 0),
+                    ])
+                    ->filter(fn (array $scorer) => $scorer['player_id'] > 0 && $scorer['goals'] > 0)
+                    ->values()
+                    ->all(),
                 'home_team' => [
                     'id' => $match->homeTeam?->id,
                     'name' => $match->homeTeam?->name,
-                    'badge' => $match->homeTeam?->badge,
+                    'badge' => $match->homeTeam?->badge_url,
+                    'players' => ($match->homeTeam?->players ?? collect())
+                        ->sortBy('number')
+                        ->values()
+                        ->map(fn (TournamentPlayer $player) => [
+                            'id' => $player->id,
+                            'name' => $player->name,
+                            'number' => $player->number,
+                            'goals' => $player->goals ?? 0,
+                        ])
+                        ->all(),
                 ],
                 'away_team' => [
                     'id' => $match->awayTeam?->id,
                     'name' => $match->awayTeam?->name,
-                    'badge' => $match->awayTeam?->badge,
+                    'badge' => $match->awayTeam?->badge_url,
+                    'players' => ($match->awayTeam?->players ?? collect())
+                        ->sortBy('number')
+                        ->values()
+                        ->map(fn (TournamentPlayer $player) => [
+                            'id' => $player->id,
+                            'name' => $player->name,
+                            'number' => $player->number,
+                            'goals' => $player->goals ?? 0,
+                        ])
+                        ->all(),
                 ],
             ]);
+    }
+
+    /**
+     * @param  array<int, array{player_id:int, goals:int}>  $scorers
+     */
+    private function validateMatchScorers(
+        array $scorers,
+        ?TournamentTeam $team,
+        int $expectedGoals,
+        string $attribute,
+    ): void {
+        if (!$team) {
+            throw ValidationException::withMessages([
+                $attribute => 'No se ha podido resolver el equipo asociado a los goleadores.',
+            ]);
+        }
+
+        $teamPlayerIds = $team->players->pluck('id');
+        $scorerPlayerIds = collect($scorers)->pluck('player_id');
+        $invalidPlayers = $scorerPlayerIds
+            ->filter(fn (int $playerId) => !$teamPlayerIds->contains($playerId))
+            ->values();
+        $goalsTotal = collect($scorers)->sum('goals');
+        $messages = [];
+
+        if ($invalidPlayers->isNotEmpty()) {
+            $messages[$attribute][] = 'Todos los goleadores seleccionados deben pertenecer al equipo correspondiente.';
+        }
+
+        if ($goalsTotal !== $expectedGoals) {
+            $messages[$attribute][] = 'La suma de goles de los goleadores debe coincidir con el marcador del equipo.';
+        }
+
+        if ($messages !== []) {
+            throw ValidationException::withMessages($messages);
+        }
+    }
+
+    /**
+     * @param  array<int, array{player_id:mixed, goals:mixed}>  $scorers
+     * @return array<int, array{player_id:int, goals:int}>
+     */
+    private function normalizeScorers(array $scorers): array
+    {
+        return collect($scorers)
+            ->filter(fn (array $scorer) => !empty($scorer['player_id']) && !empty($scorer['goals']))
+            ->map(fn (array $scorer) => [
+                'player_id' => (int) $scorer['player_id'],
+                'goals' => (int) $scorer['goals'],
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function recalculateTournamentStandings(Tournament $tournament): void
+    {
+        $tournament->load('teams', 'matches');
+
+        $teamStats = [];
+
+        foreach ($tournament->teams as $team) {
+            $teamStats[$team->id] = [
+                'name' => $team->name,
+                'played' => 0,
+                'won' => 0,
+                'drawn' => 0,
+                'lost' => 0,
+                'goals_for' => 0,
+                'goals_against' => 0,
+                'goal_difference' => 0,
+                'points' => 0,
+            ];
+        }
+
+        foreach ($tournament->matches as $match) {
+            if (
+                $match->status !== 'FINISHED'
+                || $match->home_score === null
+                || $match->away_score === null
+                || !isset($teamStats[$match->home_team_id], $teamStats[$match->away_team_id])
+            ) {
+                continue;
+            }
+
+            $homeTeamStats = &$teamStats[$match->home_team_id];
+            $awayTeamStats = &$teamStats[$match->away_team_id];
+
+            $homeTeamStats['played']++;
+            $awayTeamStats['played']++;
+            $homeTeamStats['goals_for'] += $match->home_score;
+            $homeTeamStats['goals_against'] += $match->away_score;
+            $awayTeamStats['goals_for'] += $match->away_score;
+            $awayTeamStats['goals_against'] += $match->home_score;
+
+            if ($match->home_score > $match->away_score) {
+                $homeTeamStats['won']++;
+                $homeTeamStats['points'] += 3;
+                $awayTeamStats['lost']++;
+            } elseif ($match->home_score < $match->away_score) {
+                $awayTeamStats['won']++;
+                $awayTeamStats['points'] += 3;
+                $homeTeamStats['lost']++;
+            } else {
+                $homeTeamStats['drawn']++;
+                $awayTeamStats['drawn']++;
+                $homeTeamStats['points']++;
+                $awayTeamStats['points']++;
+            }
+
+            unset($homeTeamStats, $awayTeamStats);
+        }
+
+        foreach ($teamStats as $teamId => &$stats) {
+            $stats['goal_difference'] = $stats['goals_for'] - $stats['goals_against'];
+        }
+        unset($stats);
+
+        $positions = collect(array_keys($teamStats))
+            ->sort(function (int $firstTeamId, int $secondTeamId) use ($teamStats) {
+                $firstTeam = $teamStats[$firstTeamId];
+                $secondTeam = $teamStats[$secondTeamId];
+
+                if ($firstTeam['points'] !== $secondTeam['points']) {
+                    return $secondTeam['points'] <=> $firstTeam['points'];
+                }
+
+                if ($firstTeam['goal_difference'] !== $secondTeam['goal_difference']) {
+                    return $secondTeam['goal_difference'] <=> $firstTeam['goal_difference'];
+                }
+
+                if ($firstTeam['goals_for'] !== $secondTeam['goals_for']) {
+                    return $secondTeam['goals_for'] <=> $firstTeam['goals_for'];
+                }
+
+                return strcasecmp($firstTeam['name'], $secondTeam['name']);
+            })
+            ->values()
+            ->flip()
+            ->map(fn (int $index) => $index + 1);
+
+        foreach ($tournament->teams as $team) {
+            $team->update([
+                ...$teamStats[$team->id],
+                'position' => $positions[$team->id] ?? null,
+            ]);
+        }
+    }
+
+    /**
+     * @param  array<int, array{player_id:int, goals:int}>  $previousHomeScorers
+     * @param  array<int, array{player_id:int, goals:int}>  $previousAwayScorers
+     * @param  array<int, array{player_id:int, goals:int}>  $homeScorers
+     * @param  array<int, array{player_id:int, goals:int}>  $awayScorers
+     */
+    private function syncPlayerGoalsFromMatchUpdate(
+        array $previousHomeScorers,
+        array $previousAwayScorers,
+        array $homeScorers,
+        array $awayScorers,
+    ): void {
+        $goalDeltas = [];
+
+        foreach ([$previousHomeScorers, $previousAwayScorers] as $scorers) {
+            foreach ($scorers as $scorer) {
+                $playerId = $scorer['player_id'];
+                $goalDeltas[$playerId] = ($goalDeltas[$playerId] ?? 0) - $scorer['goals'];
+            }
+        }
+
+        foreach ([$homeScorers, $awayScorers] as $scorers) {
+            foreach ($scorers as $scorer) {
+                $playerId = $scorer['player_id'];
+                $goalDeltas[$playerId] = ($goalDeltas[$playerId] ?? 0) + $scorer['goals'];
+            }
+        }
+
+        if ($goalDeltas === []) {
+            return;
+        }
+
+        $players = TournamentPlayer::query()
+            ->whereIn('id', array_keys($goalDeltas))
+            ->get()
+            ->keyBy('id');
+
+        foreach ($goalDeltas as $playerId => $delta) {
+            /** @var TournamentPlayer|null $player */
+            $player = $players->get($playerId);
+
+            if (!$player) {
+                continue;
+            }
+
+            $player->update([
+                'goals' => max(0, ((int) $player->goals) + $delta),
+            ]);
+        }
     }
 
     private function canManageTournament(Tournament $tournament): bool
