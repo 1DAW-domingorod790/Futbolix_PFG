@@ -5,7 +5,6 @@ namespace App\Models\Tournaments;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class TournamentTeam extends Model
 {
@@ -57,6 +56,6 @@ class TournamentTeam extends Model
             return $this->badge;
         }
 
-        return Storage::url($this->badge);
+        return route('tournaments.teams.badge', $this);
     }
 }

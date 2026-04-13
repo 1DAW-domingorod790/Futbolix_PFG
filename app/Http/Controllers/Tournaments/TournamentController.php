@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class TournamentController extends Controller
 {
@@ -172,6 +173,28 @@ class TournamentController extends Controller
                     ]),
                 'recent_matches' => $recentMatches,
             ],
+        ]);
+    }
+
+    public function showTeamBadge(TournamentTeam $team): SymfonyResponse
+    {
+        $team->loadMissing('tournament');
+        abort_unless($team->tournament && $this->canAccessTournament($team->tournament), 403);
+
+        $badgePath = $team->getRawOriginal('badge');
+
+        if (!$badgePath) {
+            abort(404);
+        }
+
+        if (str_starts_with($badgePath, 'http')) {
+            return redirect()->away($badgePath);
+        }
+
+        abort_unless(Storage::disk('public')->exists($badgePath), 404);
+
+        return response()->file(Storage::disk('public')->path($badgePath), [
+            'Cache-Control' => 'public, max-age=86400',
         ]);
     }
 

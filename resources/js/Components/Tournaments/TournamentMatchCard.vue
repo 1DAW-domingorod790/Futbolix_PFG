@@ -2,6 +2,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { route } from 'ziggy-js';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 
 type MatchTeam = {
     id: number | null;
@@ -296,13 +297,9 @@ watch(
         </p>
 
         <div v-if="canManage" class="mt-5 flex justify-end">
-            <button
-                type="button"
-                class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark"
-                @click="openResultForm"
-            >
+            <PrimaryButton @click="openResultForm">
                 {{ resultActionLabel }}
-            </button>
+            </PrimaryButton>
         </div>
 
         <div
@@ -310,7 +307,7 @@ watch(
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
             @click.self="closeResultForm"
         >
-            <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-futbolix-dark">
+            <div class="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-futbolix-dark">
                 <div class="mb-6">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-futbolix-gold">Marcador del torneo</p>
                     <h3 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">
@@ -502,13 +499,9 @@ watch(
                         >
                             Cancelar
                         </button>
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:cursor-not-allowed disabled:opacity-60"
-                        >
+                        <PrimaryButton>
                             Guardar resultado
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </form>
             </div>

@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
     Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
     Route::get('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'showTeam'])->name('tournaments.teams.show');
+    Route::get('/tournament-teams/{team}/badge', [TournamentController::class, 'showTeamBadge'])->name('tournaments.teams.badge');
     Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
     Route::patch('/tournaments/{tournament}', [TournamentController::class, 'update'])->name('tournaments.update');
     Route::patch('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'updateTeam'])->name('tournaments.teams.update');

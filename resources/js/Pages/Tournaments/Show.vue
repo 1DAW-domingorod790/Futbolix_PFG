@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { route } from 'ziggy-js';
 import FileInput from '@/Components/FileInput.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TournamentMatchCard from '@/Components/Tournaments/TournamentMatchCard.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
@@ -281,10 +282,8 @@ watch(activeTab, () => {
                                 </li>
                             </ul>
 
-                            <button
+                            <PrimaryButton
                                 v-if="tournament.can_manage && (activeTab === 'standings' || activeTab === 'matches')"
-                                type="button"
-                                class="inline-flex items-center justify-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark"
                                 @click="openActionPanel"
                             >
                                 {{
@@ -292,7 +291,7 @@ watch(activeTab, () => {
                                         ? 'Anadir equipo'
                                         : 'Anadir partido'
                                 }}
-                            </button>
+                            </PrimaryButton>
                         </div>
                     </div>
 
@@ -334,7 +333,7 @@ watch(activeTab, () => {
                                     <div class="flex min-w-0 items-center gap-4">
                                         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-futbolix-green/10 text-base font-bold text-futbolix-green">{{ index + 1 }}</div>
                                         <img :src="scorer.photo_url" :alt="scorer.name" class="h-14 w-14 rounded-full object-cover">
-                                        <div class="min-w-0"><p class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ scorer.name }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.team_name }} - Dorsal {{ scorer.number }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.age ? `${scorer.age} anios` : 'Edad no registrada' }}</p></div>
+                                        <div class="min-w-0"><p class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ scorer.name }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.team_name }} - Dorsal {{ scorer.number }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.age ? `${scorer.age} años` : 'Edad no registrada' }}</p></div>
                                     </div>
                                     <span class="inline-flex items-center rounded-full bg-futbolix-gold/15 px-3 py-1 text-sm font-semibold text-futbolix-gold">{{ scorer.goals }} goles</span>
                                 </div>
@@ -382,13 +381,9 @@ watch(activeTab, () => {
                         >
                             Cancelar
                         </button>
-                        <button
-                            type="submit"
-                            :disabled="teamForm.processing"
-                            class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
-                        >
+                        <PrimaryButton>
                             Guardar equipo
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </form>
             </div>
@@ -487,13 +482,9 @@ watch(activeTab, () => {
                         >
                             Cancelar
                         </button>
-                        <button
-                            type="submit"
-                            :disabled="matchForm.processing"
-                            class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
-                        >
+                        <PrimaryButton>
                             Guardar partido
-                        </button>
+                        </PrimaryButton>
                     </div>
                 </form>
             </div>
