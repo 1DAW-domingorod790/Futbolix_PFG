@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 import { route } from 'ziggy-js';
 import FileInput from '@/Components/FileInput.vue';
 import TournamentMatchCard from '@/Components/Tournaments/TournamentMatchCard.vue';
@@ -8,9 +8,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 type TabKey = 'matches' | 'standings' | 'scorers';
 type StandingRow = { id: number; position: number | null; name: string; badge: string | null; played: number; won: number; drawn: number; lost: number; goals_for: number; goals_against: number; goal_difference: number; points: number };
-type TeamItem = { id: number; name: string; badge: string | null; position: number | null };
-type MatchTeam = { id: number | null; name: string | null; badge: string | null };
-type MatchItem = { id: number; matchday: number | null; scheduled_at: string | null; venue: string | null; status: string | null; home_score: number | null; away_score: number | null; home_team: MatchTeam; away_team: MatchTeam };
+type PlayerItem = { id: number; name: string; number: number; goals: number };
+type TeamItem = { id: number; name: string; badge: string | null; position: number | null; players?: PlayerItem[] };
+type MatchScorer = { player_id: number; goals: number };
+type MatchTeam = { id: number | null; name: string | null; badge: string | null; players: PlayerItem[] };
+type MatchItem = { id: number; matchday: number | null; scheduled_at: string | null; venue: string | null; status: string | null; home_score: number | null; away_score: number | null; home_scorers: MatchScorer[]; away_scorers: MatchScorer[]; home_team: MatchTeam; away_team: MatchTeam };
 type TopScorer = { id: number; name: string; number: number; age: number | null; goals: number; photo_url: string; team_name: string };
 type TournamentDetail = {
     id: number;
@@ -101,8 +103,7 @@ function submitTeam() {
     teamForm.post(route('tournaments.teams.store', props.tournament.id), {
         preserveScroll: true,
         onSuccess: () => {
-            teamForm.reset();
-            showTeamForm.value = false;
+            closeTeamForm();
         },
     });
 }
@@ -111,29 +112,47 @@ function submitMatch() {
     matchForm.post(route('tournaments.matches.store', props.tournament.id), {
         preserveScroll: true,
         onSuccess: () => {
-            matchForm.reset();
-            matchForm.matchday = '1';
-            showMatchForm.value = false;
+            closeMatchForm();
         },
     });
 }
 
-function toggleActionPanel() {
+function openActionPanel() {
     if (activeTab.value === 'standings') {
-        showTeamForm.value = !showTeamForm.value;
+        showTeamForm.value = true;
         showMatchForm.value = false;
+        teamForm.clearErrors();
         return;
     }
 
     if (activeTab.value === 'matches') {
-        showMatchForm.value = !showMatchForm.value;
+        showMatchForm.value = true;
         showTeamForm.value = false;
+        matchForm.clearErrors();
     }
+}
+
+function closeTeamForm() {
+    showTeamForm.value = false;
+    teamForm.reset();
+    teamForm.clearErrors();
+}
+
+function closeMatchForm() {
+    showMatchForm.value = false;
+    matchForm.reset();
+    matchForm.matchday = '1';
+    matchForm.clearErrors();
 }
 
 if (matchdayGroups.value.length && !selectedMatchdayKey.value) {
     selectedMatchdayKey.value = matchdayGroups.value[0].key;
 }
+
+watch(activeTab, () => {
+    closeTeamForm();
+    closeMatchForm();
+});
 </script>
 
 <template>
@@ -266,126 +285,15 @@ if (matchdayGroups.value.length && !selectedMatchdayKey.value) {
                                 v-if="tournament.can_manage && (activeTab === 'standings' || activeTab === 'matches')"
                                 type="button"
                                 class="inline-flex items-center justify-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark"
-                                @click="toggleActionPanel"
+                                @click="openActionPanel"
                             >
                                 {{
                                     activeTab === 'standings'
-                                        ? (showTeamForm ? 'Cerrar equipo' : 'Anadir equipo')
-                                        : (showMatchForm ? 'Cerrar partido' : 'Anadir partido')
+                                        ? 'Anadir equipo'
+                                        : 'Anadir partido'
                                 }}
                             </button>
                         </div>
-                    </div>
-
-                    <div v-if="tournament.can_manage && activeTab === 'standings' && showTeamForm" class="border-b border-slate-200 px-6 py-6 dark:border-slate-700">
-                        <form class="max-w-xl space-y-4" @submit.prevent="submitTeam">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    Nombre del equipo
-                                </label>
-                                <input
-                                    v-model="teamForm.name"
-                                    type="text"
-                                    placeholder="Ej. Los Invencibles"
-                                    class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                                >
-                                <p v-if="teamForm.errors.name" class="mt-2 text-sm text-red-500">{{ teamForm.errors.name }}</p>
-                            </div>
-
-                            <div class="flex justify-end">
-                                <button
-                                    type="submit"
-                                    :disabled="teamForm.processing"
-                                    class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
-                                >
-                                    Guardar equipo
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div v-if="tournament.can_manage && activeTab === 'matches' && showMatchForm" class="border-b border-slate-200 px-6 py-6 dark:border-slate-700">
-                        <form class="grid gap-4 lg:grid-cols-2" @submit.prevent="submitMatch">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    Jornada
-                                </label>
-                                <input
-                                    v-model="matchForm.matchday"
-                                    type="number"
-                                    min="1"
-                                    class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                                >
-                                <p v-if="matchForm.errors.matchday" class="mt-2 text-sm text-red-500">{{ matchForm.errors.matchday }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    Fecha y hora
-                                </label>
-                                <input
-                                    v-model="matchForm.scheduled_at"
-                                    type="datetime-local"
-                                    class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                                >
-                                <p v-if="matchForm.errors.scheduled_at" class="mt-2 text-sm text-red-500">{{ matchForm.errors.scheduled_at }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    Equipo local
-                                </label>
-                                <select
-                                    v-model="matchForm.home_team_id"
-                                    class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                                >
-                                    <option disabled value="">Selecciona un equipo</option>
-                                    <option v-for="team in tournament.teams" :key="`home-${team.id}`" :value="String(team.id)">
-                                        {{ team.name }}
-                                    </option>
-                                </select>
-                                <p v-if="matchForm.errors.home_team_id" class="mt-2 text-sm text-red-500">{{ matchForm.errors.home_team_id }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    Equipo visitante
-                                </label>
-                                <select
-                                    v-model="matchForm.away_team_id"
-                                    class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                                >
-                                    <option disabled value="">Selecciona un equipo</option>
-                                    <option v-for="team in tournament.teams" :key="`away-${team.id}`" :value="String(team.id)">
-                                        {{ team.name }}
-                                    </option>
-                                </select>
-                                <p v-if="matchForm.errors.away_team_id" class="mt-2 text-sm text-red-500">{{ matchForm.errors.away_team_id }}</p>
-                            </div>
-
-                            <div class="lg:col-span-2">
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    Campo
-                                </label>
-                                <input
-                                    v-model="matchForm.venue"
-                                    type="text"
-                                    placeholder="Ej. Campo municipal"
-                                    class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                                >
-                                <p v-if="matchForm.errors.venue" class="mt-2 text-sm text-red-500">{{ matchForm.errors.venue }}</p>
-                            </div>
-
-                            <div class="lg:col-span-2 flex justify-end">
-                                <button
-                                    type="submit"
-                                    :disabled="matchForm.processing"
-                                    class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
-                                >
-                                    Guardar partido
-                                </button>
-                            </div>
-                        </form>
                     </div>
 
                     <div v-if="activeTab === 'matches'" class="space-y-5 px-6 py-6">
@@ -405,7 +313,12 @@ if (matchdayGroups.value.length && !selectedMatchdayKey.value) {
                                 <tbody>
                                     <tr v-for="team in tournament.standings" :key="team.id" class="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/40">
                                         <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">{{ team.position ?? '-' }}</td>
-                                        <td class="px-4 py-4"><div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100"><img v-if="team.badge" :src="team.badge" :alt="team.name" class="h-full w-full object-cover"><span v-else>{{ teamInitials(team.name) }}</span></div><span class="font-semibold text-slate-900 dark:text-white">{{ team.name }}</span></div></td>
+                                        <td class="px-4 py-4">
+                                            <Link :href="route('tournaments.teams.show', [tournament.id, team.id])" class="flex items-center gap-3 transition hover:opacity-80">
+                                                <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100"><img v-if="team.badge" :src="team.badge" :alt="team.name" class="h-full w-full object-cover"><span v-else>{{ teamInitials(team.name) }}</span></div>
+                                                <span class="font-semibold text-slate-900 dark:text-white">{{ team.name }}</span>
+                                            </Link>
+                                        </td>
                                         <td class="px-4 py-4 text-center">{{ team.played }}</td><td class="px-4 py-4 text-center">{{ team.won }}</td><td class="px-4 py-4 text-center">{{ team.drawn }}</td><td class="px-4 py-4 text-center">{{ team.lost }}</td><td class="px-4 py-4 text-center">{{ team.goals_for }}</td><td class="px-4 py-4 text-center">{{ team.goals_against }}</td><td class="px-4 py-4 text-center">{{ goalDifferenceLabel(team.goal_difference) }}</td><td class="px-4 py-4 text-center font-bold text-slate-900 dark:text-white">{{ team.points }}</td>
                                     </tr>
                                 </tbody>
@@ -430,6 +343,159 @@ if (matchdayGroups.value.length && !selectedMatchdayKey.value) {
                         <div v-else class="rounded-lg border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-600 dark:text-slate-400">Aun no hay datos de goleadores para este torneo.</div>
                     </div>
                 </section>
+            </div>
+        </div>
+
+        <div
+            v-if="tournament.can_manage && showTeamForm"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+            @click.self="closeTeamForm"
+        >
+            <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-futbolix-dark">
+                <div class="mb-6">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-futbolix-gold">Plantilla del torneo</p>
+                    <h2 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">Anadir equipo</h2>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                        Registra un nuevo equipo para que aparezca en la clasificacion y puedas asignarlo a partidos.
+                    </p>
+                </div>
+
+                <form class="space-y-4" @submit.prevent="submitTeam">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            Nombre del equipo
+                        </label>
+                        <input
+                            v-model="teamForm.name"
+                            type="text"
+                            placeholder="Ej. Los Invencibles"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                        >
+                        <p v-if="teamForm.errors.name" class="mt-2 text-sm text-red-500">{{ teamForm.errors.name }}</p>
+                    </div>
+
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button
+                            type="button"
+                            class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                            @click="closeTeamForm"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="teamForm.processing"
+                            class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
+                        >
+                            Guardar equipo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div
+            v-if="tournament.can_manage && showMatchForm"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+            @click.self="closeMatchForm"
+        >
+            <div class="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-futbolix-dark">
+                <div class="mb-6">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-futbolix-gold">Calendario del torneo</p>
+                    <h2 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">Anadir partido</h2>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                        Configura la jornada, los equipos y el campo para dejar el partido listo en el calendario.
+                    </p>
+                </div>
+
+                <form class="grid gap-4 lg:grid-cols-2" @submit.prevent="submitMatch">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            Jornada
+                        </label>
+                        <input
+                            v-model="matchForm.matchday"
+                            type="number"
+                            min="1"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                        >
+                        <p v-if="matchForm.errors.matchday" class="mt-2 text-sm text-red-500">{{ matchForm.errors.matchday }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            Fecha y hora
+                        </label>
+                        <input
+                            v-model="matchForm.scheduled_at"
+                            type="datetime-local"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                        >
+                        <p v-if="matchForm.errors.scheduled_at" class="mt-2 text-sm text-red-500">{{ matchForm.errors.scheduled_at }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            Equipo local
+                        </label>
+                        <select
+                            v-model="matchForm.home_team_id"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                        >
+                            <option disabled value="">Selecciona un equipo</option>
+                            <option v-for="team in tournament.teams" :key="`home-${team.id}`" :value="String(team.id)">
+                                {{ team.name }}
+                            </option>
+                        </select>
+                        <p v-if="matchForm.errors.home_team_id" class="mt-2 text-sm text-red-500">{{ matchForm.errors.home_team_id }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            Equipo visitante
+                        </label>
+                        <select
+                            v-model="matchForm.away_team_id"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                        >
+                            <option disabled value="">Selecciona un equipo</option>
+                            <option v-for="team in tournament.teams" :key="`away-${team.id}`" :value="String(team.id)">
+                                {{ team.name }}
+                            </option>
+                        </select>
+                        <p v-if="matchForm.errors.away_team_id" class="mt-2 text-sm text-red-500">{{ matchForm.errors.away_team_id }}</p>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                            Campo
+                        </label>
+                        <input
+                            v-model="matchForm.venue"
+                            type="text"
+                            placeholder="Ej. Campo municipal"
+                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                        >
+                        <p v-if="matchForm.errors.venue" class="mt-2 text-sm text-red-500">{{ matchForm.errors.venue }}</p>
+                    </div>
+
+                    <div class="mt-2 flex justify-end gap-3 lg:col-span-2">
+                        <button
+                            type="button"
+                            class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                            @click="closeMatchForm"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="matchForm.processing"
+                            class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
+                        >
+                            Guardar partido
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </AuthenticatedLayout>

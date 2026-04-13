@@ -50,8 +50,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
     Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
     Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
+    Route::get('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'showTeam'])->name('tournaments.teams.show');
     Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
     Route::patch('/tournaments/{tournament}', [TournamentController::class, 'update'])->name('tournaments.update');
+    Route::patch('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'updateTeam'])->name('tournaments.teams.update');
     Route::post('/tournaments/{tournament}/teams', [TournamentController::class, 'storeTeam'])->name('tournaments.teams.store');
     Route::post('/tournaments/{tournament}/matches', [TournamentController::class, 'storeMatch'])->name('tournaments.matches.store');
     Route::post('/tournaments/{tournament}/teams/{team}/players', [TournamentController::class, 'storePlayer'])->name('tournaments.teams.players.store');

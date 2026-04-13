@@ -19,6 +19,12 @@ class UpdateTournamentMatchResultRequest extends FormRequest
         return [
             'home_score' => ['required', 'integer', 'min:0', 'max:99'],
             'away_score' => ['required', 'integer', 'min:0', 'max:99'],
+            'home_scorers' => ['nullable', 'array'],
+            'home_scorers.*.player_id' => ['required', 'integer', 'distinct', 'exists:tournament_players,id'],
+            'home_scorers.*.goals' => ['required', 'integer', 'min:1', 'max:99'],
+            'away_scorers' => ['nullable', 'array'],
+            'away_scorers.*.player_id' => ['required', 'integer', 'distinct', 'exists:tournament_players,id'],
+            'away_scorers.*.goals' => ['required', 'integer', 'min:1', 'max:99'],
         ];
     }
 }

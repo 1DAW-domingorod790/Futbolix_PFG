@@ -5,9 +5,12 @@ namespace App\Models\Tournaments;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class TournamentTeam extends Model
 {
+    protected $appends = ['badge_url'];
+
     protected $fillable = [
         'code',
         'name',
@@ -42,5 +45,18 @@ class TournamentTeam extends Model
     public function awayMatches(): HasMany
     {
         return $this->hasMany(TournamentMatch::class, 'away_team_id');
+    }
+
+    public function getBadgeUrlAttribute(): string
+    {
+        if (!$this->badge) {
+            return asset('tournament-avatar.png');
+        }
+
+        if (str_starts_with($this->badge, 'http')) {
+            return $this->badge;
+        }
+
+        return Storage::url($this->badge);
     }
 }
