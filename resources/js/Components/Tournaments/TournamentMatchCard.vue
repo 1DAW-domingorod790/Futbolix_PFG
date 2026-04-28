@@ -296,8 +296,15 @@ watch(
             Campo: {{ match.venue || 'Pendiente de confirmar' }}
         </p>
 
-        <div v-if="canManage" class="mt-5 flex justify-end">
-            <PrimaryButton @click="openResultForm">
+        <div class="mt-5 flex flex-wrap justify-end gap-3">
+            <Link
+                :href="route('tournaments.matches.show', [tournamentId, match.id])"
+                class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+                Ver partido
+            </Link>
+
+            <PrimaryButton v-if="canManage && match.home_score === null && match.away_score === null" @click="openResultForm">
                 {{ resultActionLabel }}
             </PrimaryButton>
         </div>

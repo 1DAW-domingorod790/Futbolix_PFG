@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Tournaments\TournamentFormat;
 use App\Models\Role;
 use App\Models\Tournaments\Tournament;
 use App\Models\Tournaments\TournamentMatch;
@@ -36,6 +37,12 @@ class TournamentSeeder extends Seeder
             [
                 'name' => 'Liga Futbol 7 - Dos Hermanas',
                 'description' => 'Torneo local de prueba para el desarrollo inicial del modulo con partidos, clasificacion y goleadores.',
+                'format' => TournamentFormat::League->value,
+                'playoff_teams_count' => null,
+                'groups_count' => null,
+                'regular_phase_matchdays_count' => null,
+                'current_matchday' => null,
+                'playoff_bracket_generated_at' => null,
                 'is_public' => false,
                 'admin_id' => $admin->id,
             ]

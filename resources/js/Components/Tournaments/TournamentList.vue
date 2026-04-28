@@ -7,6 +7,16 @@ type TournamentListItem = {
     code: number;
     name: string;
     description: string | null;
+    format: {
+        value: string;
+        label: string;
+        has_playoffs: boolean;
+        has_groups: boolean;
+        has_regular_phase: boolean;
+        playoff_teams_count: number | null;
+        groups_count: number | null;
+        regular_phase_matchdays_count: number | null;
+    };
     created_at: string;
     is_public?: boolean;
     logo_url?: string | null;
@@ -60,6 +70,9 @@ function formatDate(value: string): string {
                                     class="inline-flex items-center rounded-full bg-futbolix-gold/15 px-2.5 py-1 text-xs font-medium text-futbolix-gold"
                                 >
                                     Codigo {{ tournament.code }}
+                                </span>
+                                <span class="inline-flex items-center rounded-full bg-futbolix-green/10 px-2.5 py-1 text-xs font-medium text-futbolix-green">
+                                    {{ tournament.format.label }}
                                 </span>
                                 <span
                                     class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"

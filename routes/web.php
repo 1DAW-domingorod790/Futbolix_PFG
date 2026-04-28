@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Api\CompetitionController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Tournaments\PlayoffController;
 use App\Http\Controllers\Tournaments\TournamentController;
 
 Route::get('/', function () {
@@ -50,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
     Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
     Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
+    Route::get('/tournaments/{tournament}/playoffs', [PlayoffController::class, 'show'])->name('tournaments.playoffs.show');
+    Route::get('/tournaments/{tournament}/matches/{match}', [TournamentController::class, 'showMatch'])->name('tournaments.matches.show');
+    Route::get('/tournaments/{tournament}/playoffs/matches/{match}', [PlayoffController::class, 'showMatch'])->name('tournaments.playoffs.matches.show');
     Route::get('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'showTeam'])->name('tournaments.teams.show');
     Route::get('/tournament-teams/{team}/badge', [TournamentController::class, 'showTeamBadge'])->name('tournaments.teams.badge');
     Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
@@ -57,6 +61,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'updateTeam'])->name('tournaments.teams.update');
     Route::post('/tournaments/{tournament}/teams', [TournamentController::class, 'storeTeam'])->name('tournaments.teams.store');
     Route::post('/tournaments/{tournament}/matches', [TournamentController::class, 'storeMatch'])->name('tournaments.matches.store');
+    Route::post('/tournaments/{tournament}/playoffs/generate', [PlayoffController::class, 'generate'])->name('tournaments.playoffs.generate');
+    Route::post('/tournaments/{tournament}/playoffs/draw', [PlayoffController::class, 'draw'])->name('tournaments.playoffs.draw');
+    Route::post('/tournaments/{tournament}/playoffs/manual', [PlayoffController::class, 'manual'])->name('tournaments.playoffs.manual');
+    Route::patch('/tournaments/{tournament}/playoffs/matches/{match}/result', [PlayoffController::class, 'updateResult'])->name('tournaments.playoffs.matches.result');
     Route::post('/tournaments/{tournament}/teams/{team}/players', [TournamentController::class, 'storePlayer'])->name('tournaments.teams.players.store');
     Route::patch('/tournaments/{tournament}/matches/{match}/result', [TournamentController::class, 'updateMatchResult'])->name('tournaments.matches.result');
 

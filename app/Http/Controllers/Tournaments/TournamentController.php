@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Tournaments;
 
+use App\Enums\Tournaments\TournamentFormat;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tournaments\StoreTournamentPlayerRequest;
 use App\Http\Requests\Tournaments\StoreTournamentMatchRequest;
@@ -14,6 +15,7 @@ use App\Models\Tournaments\Tournament;
 use App\Models\Tournaments\TournamentMatch;
 use App\Models\Tournaments\TournamentPlayer;
 use App\Models\Tournaments\TournamentTeam;
+use App\Services\Tournaments\PlayoffBracketService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -34,22 +36,54 @@ class TournamentController extends Controller
                 ->tournaments()
                 ->with('admin:id,name')
                 ->latest()
-                ->get(['id', 'code', 'name', 'description', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
+                ->get([
+                    'id',
+                    'code',
+                    'name',
+                    'description',
+                    'format',
+                    'playoff_teams_count',
+                    'groups_count',
+                    'regular_phase_matchdays_count',
+                    'current_matchday',
+                    'playoff_bracket_generated_at',
+                    'created_at',
+                    'admin_id',
+                    'logo_path',
+                    'is_public',
+                ])),
             'publicTournaments' => $this->buildTournamentCards(Tournament::query()
                 ->with('admin:id,name')
                 ->where('is_public', true)
                 ->where('admin_id', '!=', $user->id)
                 ->latest()
-                ->get(['id', 'code', 'name', 'description', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
+                ->get([
+                    'id',
+                    'code',
+                    'name',
+                    'description',
+                    'format',
+                    'playoff_teams_count',
+                    'groups_count',
+                    'regular_phase_matchdays_count',
+                    'current_matchday',
+                    'playoff_bracket_generated_at',
+                    'created_at',
+                    'admin_id',
+                    'logo_path',
+                    'is_public',
+                ])),
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Tournaments/Create');
+        return Inertia::render('Tournaments/Create', [
+            'formatOptions' => TournamentFormat::options(),
+        ]);
     }
 
-    public function show(Tournament $tournament): Response
+    public function show(Tournament $tournament, PlayoffBracketService $playoffBracketService): Response
     {
         abort_unless($this->canAccessTournament($tournament), 403);
 
@@ -60,6 +94,9 @@ class TournamentController extends Controller
             'matches.awayTeam',
             'matches.awayTeam.players',
             'admin:id,name',
+            'playoffRounds.matches.homeTeam',
+            'playoffRounds.matches.awayTeam',
+            'playoffRounds.matches.winnerTeam',
         ]);
 
         $standings = $this->buildStandings($tournament);
@@ -75,6 +112,7 @@ class TournamentController extends Controller
                 'name' => $tournament->name,
                 'logo_url' => $tournament->logo_url,
                 'description' => $tournament->description,
+                'format' => $this->serializeTournamentFormat($tournament),
                 'is_public' => (bool) $tournament->is_public,
                 'can_manage' => $canManage,
                 'created_at' => $tournament->created_at?->toIso8601String(),
@@ -91,6 +129,7 @@ class TournamentController extends Controller
                 'standings' => $standings->values(),
                 'matches' => $matches->values(),
                 'top_scorers' => $topScorers->values(),
+                'playoffs' => $this->serializePlayoffs($tournament, $playoffBracketService),
             ],
         ]);
     }
@@ -198,6 +237,27 @@ class TournamentController extends Controller
         ]);
     }
 
+    public function showMatch(Tournament $tournament, TournamentMatch $match): Response
+    {
+        abort_unless($this->canAccessTournament($tournament), 403);
+        abort_unless($match->tournament_id === $tournament->id, 404);
+
+        $match->load([
+            'homeTeam.players',
+            'awayTeam.players',
+        ]);
+
+        return Inertia::render('Tournaments/MatchShow', [
+            'tournament' => [
+                'id' => $tournament->id,
+                'name' => $tournament->name,
+                'code' => $tournament->code,
+                'can_manage' => $this->canManageTournament($tournament),
+            ],
+            'match' => $this->serializeTournamentMatch($match),
+        ]);
+    }
+
     public function store(StoreTournamentRequest $request): RedirectResponse
     {
         $validated = $request->validated();
@@ -206,6 +266,10 @@ class TournamentController extends Controller
             'code' => $this->generateUniqueCode(),
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'format' => $validated['format'],
+            'playoff_teams_count' => $this->playoffTeamsCountFor($validated),
+            'groups_count' => $this->groupsCountFor($validated),
+            'regular_phase_matchdays_count' => $this->regularPhaseMatchdaysCountFor($validated),
             'logo_path' => $request->file('logo_path')?->store('tournaments', 'public'),
             'is_public' => false,
             'admin_id' => $request->user()->id,
@@ -340,6 +404,7 @@ class TournamentController extends Controller
         UpdateTournamentMatchResultRequest $request,
         Tournament $tournament,
         TournamentMatch $match,
+        PlayoffBracketService $playoffBracketService,
     ): RedirectResponse {
         abort_unless($this->canManageTournament($tournament), 403);
         abort_unless($match->tournament_id === $tournament->id, 404);
@@ -381,8 +446,14 @@ class TournamentController extends Controller
             );
         });
 
+        $tournament->update([
+            'current_matchday' => $tournament->matches()->where('status', 'FINISHED')->max('matchday') ?: null,
+        ]);
+
+        $playoffBracketService->generateAutomaticallyIfReady($tournament->fresh());
+
         return redirect()
-            ->route('tournaments.show', $tournament)
+            ->back()
             ->with('success', 'El resultado del partido se ha guardado.');
     }
 
@@ -563,6 +634,63 @@ class TournamentController extends Controller
                         ->all(),
                 ],
             ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeTournamentMatch(TournamentMatch $match): array
+    {
+        return [
+            'id' => $match->id,
+            'matchday' => $match->matchday,
+            'scheduled_at' => $match->scheduled_at?->toIso8601String(),
+            'venue' => $match->venue,
+            'status' => $match->status,
+            'home_score' => $match->home_score,
+            'away_score' => $match->away_score,
+            'home_scorers' => $this->serializeScorers($match->home_scorers ?? []),
+            'away_scorers' => $this->serializeScorers($match->away_scorers ?? []),
+            'home_team' => $this->serializeMatchTeam($match->homeTeam),
+            'away_team' => $this->serializeMatchTeam($match->awayTeam),
+        ];
+    }
+
+    /**
+     * @return array<int, array{player_id:int, goals:int}>
+     */
+    private function serializeScorers(array $scorers): array
+    {
+        return collect($scorers)
+            ->map(fn (array $scorer) => [
+                'player_id' => (int) ($scorer['player_id'] ?? 0),
+                'goals' => (int) ($scorer['goals'] ?? 0),
+            ])
+            ->filter(fn (array $scorer) => $scorer['player_id'] > 0 && $scorer['goals'] > 0)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeMatchTeam(?TournamentTeam $team): array
+    {
+        return [
+            'id' => $team?->id,
+            'name' => $team?->name,
+            'badge' => $team?->badge_url,
+            'players' => ($team?->players ?? collect())
+                ->sortBy('number')
+                ->values()
+                ->map(fn (TournamentPlayer $player) => [
+                    'id' => $player->id,
+                    'name' => $player->name,
+                    'number' => $player->number,
+                    'goals' => $player->goals ?? 0,
+                ])
+                ->all(),
+        ];
     }
 
     /**
@@ -774,6 +902,11 @@ class TournamentController extends Controller
             'code' => $tournament->code,
             'name' => $tournament->name,
             'description' => $tournament->description,
+            'format' => $this->serializeTournamentFormat($tournament),
+            'playoffs' => [
+                'state' => $tournament->playoff_bracket_generated_at ? 'generated' : 'not_generated',
+                'generated_at' => $tournament->playoff_bracket_generated_at?->toIso8601String(),
+            ],
             'created_at' => $tournament->created_at?->toIso8601String(),
             'is_public' => (bool) $tournament->is_public,
             'logo_url' => $tournament->logo_url,
@@ -787,5 +920,108 @@ class TournamentController extends Controller
     private function canAccessTournament(Tournament $tournament): bool
     {
         return $this->canManageTournament($tournament) || (bool) $tournament->is_public;
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function playoffTeamsCountFor(array $validated): ?int
+    {
+        $format = TournamentFormat::from($validated['format']);
+
+        return $format->hasPlayoffs()
+            ? (int) $validated['playoff_teams_count']
+            : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function groupsCountFor(array $validated): ?int
+    {
+        $format = TournamentFormat::from($validated['format']);
+
+        return $format->hasGroups()
+            ? (int) $validated['groups_count']
+            : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function regularPhaseMatchdaysCountFor(array $validated): ?int
+    {
+        $format = TournamentFormat::from($validated['format']);
+
+        return $format->hasRegularPhase()
+            ? (int) $validated['regular_phase_matchdays_count']
+            : null;
+    }
+
+    /**
+     * @return array{value:string, label:string, has_playoffs:bool, has_groups:bool, has_regular_phase:bool, playoff_teams_count:?int, groups_count:?int, regular_phase_matchdays_count:?int}
+     */
+    private function serializeTournamentFormat(Tournament $tournament): array
+    {
+        $format = $tournament->format ?? TournamentFormat::League;
+
+        return [
+            'value' => $format->value,
+            'label' => $format->label(),
+            'has_playoffs' => $format->hasPlayoffs(),
+            'has_groups' => $format->hasGroups(),
+            'has_regular_phase' => $format->hasRegularPhase(),
+            'playoff_teams_count' => $tournament->playoff_teams_count,
+            'groups_count' => $tournament->groups_count,
+            'regular_phase_matchdays_count' => $tournament->regular_phase_matchdays_count,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializePlayoffs(Tournament $tournament, PlayoffBracketService $playoffBracketService): array
+    {
+        return [
+            ...$playoffBracketService->statusFor($tournament),
+            'rounds' => $tournament->playoffRounds
+                ->map(fn ($round) => [
+                    'id' => $round->id,
+                    'name' => $round->name,
+                    'round_number' => $round->round_number,
+                    'matches_count' => $round->matches_count,
+                    'matches' => $round->matches
+                        ->map(fn ($match) => [
+                            'id' => $match->id,
+                            'round_number' => $match->round_number,
+                            'position' => $match->position,
+                            'status' => $match->status,
+                            'home_score' => $match->home_score,
+                            'away_score' => $match->away_score,
+                            'home_team' => $this->serializePlayoffTeam($match->homeTeam),
+                            'away_team' => $this->serializePlayoffTeam($match->awayTeam),
+                            'winner_team' => $this->serializePlayoffTeam($match->winnerTeam),
+                            'next_match_id' => $match->next_match_id,
+                        ])
+                        ->values(),
+                ])
+                ->values(),
+        ];
+    }
+
+    /**
+     * @return array{id:int, name:string, badge:?string}|null
+     */
+    private function serializePlayoffTeam(?TournamentTeam $team): ?array
+    {
+        if (!$team) {
+            return null;
+        }
+
+        return [
+            'id' => $team->id,
+            'name' => $team->name,
+            'badge' => $team->badge_url,
+        ];
     }
 }
