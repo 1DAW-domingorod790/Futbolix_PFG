@@ -3,22 +3,36 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { ref, computed, watch } from 'vue';
+import { route } from 'ziggy-js';
 
 defineProps({
-    mustVerifyEmail: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
+    mustVerifyEmail: { type: Boolean },
+    status: { type: String },
 });
 
-const user = usePage().props.auth.user;
+const page = usePage();
+const user = computed(() => page.props.auth.user as any);
 
 const form = useForm({
-    name: user.name,
-    email: user.email,
+    _method: 'PATCH',
+    name: user.value.name,
+    email: user.value.email,
+    avatar: null as File | null,
 });
+
+const avatarPreview = ref<string | null>(user.value.avatar_url ?? null);
+
+watch(() => user.value.avatar_url, (newUrl) => {
+    if (newUrl && !form.avatar) avatarPreview.value = newUrl;
+});
+
+function onAvatarChange(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    form.avatar = file;
+    avatarPreview.value = URL.createObjectURL(file);
+}
 </script>
 
 <template>
@@ -31,9 +45,38 @@ const form = useForm({
         </header>
 
         <form
-            @submit.prevent="form.patch(route('profile.update'))"
+            @submit.prevent="form.post(route('profile.update'), { forceFormData: true })"
             class="space-y-5"
         >
+            <!-- Avatar -->
+            <div class="flex items-center gap-5">
+                <div class="relative shrink-0">
+                    <img
+                        v-if="avatarPreview"
+                        :src="avatarPreview"
+                        class="h-20 w-20 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-600"
+                        alt="Avatar"
+                    />
+                    <div
+                        v-else
+                        class="flex h-20 w-20 items-center justify-center rounded-full bg-futbolix-green text-2xl font-bold text-white ring-2 ring-slate-200 dark:ring-slate-600"
+                    >
+                        {{ user.name?.charAt(0).toUpperCase() }}
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <InputLabel value="Foto de perfil" class="mb-1 text-sm font-semibold text-black dark:text-slate-300" />
+                    <label class="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                        </svg>
+                        Cambiar foto
+                        <input type="file" class="hidden" accept="image/*" @change="onAvatarChange" />
+                    </label>
+                    <InputError :message="form.errors.avatar" />
+                </div>
+            </div>
+
             <!-- Campo Nombre -->
             <div class="group">
                 <InputLabel for="name" value="Nombre" class="mb-1.5 text-sm font-semibold text-black dark:text-slate-300"

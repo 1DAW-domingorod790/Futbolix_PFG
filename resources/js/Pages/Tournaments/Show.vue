@@ -258,6 +258,15 @@ watch(expectedFirstRoundMatches, () => {
             <div class="mx-auto max-w-7xl space-y-6">
                 <div v-if="page.props.flash?.success" class="rounded-2xl border border-futbolix-green/30 bg-futbolix-green/10 px-4 py-3 text-sm text-futbolix-green">{{ page.props.flash.success }}</div>
 
+                <div>
+                    <Link :href="route('tournaments.index')" class="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Volver a Torneos
+                    </Link>
+                </div>
+
                 <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-futbolix-dark">
                     <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                         <div class="flex gap-5">

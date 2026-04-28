@@ -36,43 +36,13 @@ class TournamentController extends Controller
                 ->tournaments()
                 ->with('admin:id,name')
                 ->latest()
-                ->get([
-                    'id',
-                    'code',
-                    'name',
-                    'description',
-                    'format',
-                    'playoff_teams_count',
-                    'groups_count',
-                    'regular_phase_matchdays_count',
-                    'current_matchday',
-                    'playoff_bracket_generated_at',
-                    'created_at',
-                    'admin_id',
-                    'logo_path',
-                    'is_public',
-                ])),
+                ->get(['id', 'code', 'name', 'description', 'format', 'playoff_teams_count', 'groups_count', 'regular_phase_matchdays_count', 'current_matchday', 'playoff_bracket_generated_at', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
             'publicTournaments' => $this->buildTournamentCards(Tournament::query()
                 ->with('admin:id,name')
-                ->where('is_public', true)
+                ->whereRaw('"is_public" = TRUE')
                 ->where('admin_id', '!=', $user->id)
                 ->latest()
-                ->get([
-                    'id',
-                    'code',
-                    'name',
-                    'description',
-                    'format',
-                    'playoff_teams_count',
-                    'groups_count',
-                    'regular_phase_matchdays_count',
-                    'current_matchday',
-                    'playoff_bracket_generated_at',
-                    'created_at',
-                    'admin_id',
-                    'logo_path',
-                    'is_public',
-                ])),
+                ->get(['id', 'code', 'name', 'description', 'format', 'playoff_teams_count', 'groups_count', 'regular_phase_matchdays_count', 'current_matchday', 'playoff_bracket_generated_at', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
         ]);
     }
 
@@ -83,7 +53,7 @@ class TournamentController extends Controller
         ]);
     }
 
-    public function show(Tournament $tournament, PlayoffBracketService $playoffBracketService): Response
+    public function show(Tournament $tournament): Response
     {
         abort_unless($this->canAccessTournament($tournament), 403);
 
@@ -129,7 +99,7 @@ class TournamentController extends Controller
                 'standings' => $standings->values(),
                 'matches' => $matches->values(),
                 'top_scorers' => $topScorers->values(),
-                'playoffs' => $this->serializePlayoffs($tournament, $playoffBracketService),
+                'playoffs' => $this->serializePlayoffs($tournament, app(PlayoffBracketService::class)),
             ],
         ]);
     }
