@@ -10,6 +10,16 @@ type TournamentListItem = {
     code: number;
     name: string;
     description: string | null;
+    format: {
+        value: string;
+        label: string;
+        has_playoffs: boolean;
+        has_groups: boolean;
+        has_regular_phase: boolean;
+        playoff_teams_count: number | null;
+        groups_count: number | null;
+        regular_phase_matchdays_count: number | null;
+    };
     created_at: string;
     is_public: boolean;
     logo_url: string | null;

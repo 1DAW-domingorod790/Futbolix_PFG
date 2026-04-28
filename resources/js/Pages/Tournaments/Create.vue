@@ -4,11 +4,45 @@ import { route } from 'ziggy-js';
 import TournamentForm from '@/Components/Tournaments/TournamentForm.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
+type TournamentFormatOption = {
+    value: string;
+    label: string;
+    has_playoffs: boolean;
+    has_groups: boolean;
+    has_regular_phase: boolean;
+};
+
+const props = defineProps<{
+    formatOptions: TournamentFormatOption[];
+}>();
+
 const form = useForm({
     name: '',
     description: '',
+    format: 'league',
+    playoff_teams_count: '',
+    groups_count: '',
+    regular_phase_matchdays_count: '',
     logo_path: null as File | null,
 });
+
+function updateFormat(value: string) {
+    const option = props.formatOptions.find((formatOption) => formatOption.value === value);
+
+    form.format = value;
+
+    if (!option?.has_playoffs) {
+        form.playoff_teams_count = '';
+    }
+
+    if (!option?.has_groups) {
+        form.groups_count = '';
+    }
+
+    if (!option?.has_regular_phase) {
+        form.regular_phase_matchdays_count = '';
+    }
+}
 
 function submit() {
     form.post(route('tournaments.store'), {
@@ -28,14 +62,19 @@ function submit() {
                     <h1 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">Crear torneo</h1>
                     <p class="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
                         Completa los datos basicos para registrar el torneo. Se creara oculto por defecto y podras
-                        subir un logo desde ahora o mas adelante.
+                        elegir su formato competitivo desde ahora.
                     </p>
                 </section>
 
                 <TournamentForm
                     :name="form.name"
                     :description="form.description"
+                    :format="form.format"
+                    :playoff-teams-count="form.playoff_teams_count"
+                    :groups-count="form.groups_count"
+                    :regular-phase-matchdays-count="form.regular_phase_matchdays_count"
                     :logo-path="form.logo_path"
+                    :format-options="formatOptions"
                     :errors="form.errors"
                     :processing="form.processing"
                     :cancel-href="route('tournaments.index')"
@@ -43,6 +82,10 @@ function submit() {
                     @submit="submit"
                     @update:name="form.name = $event"
                     @update:description="form.description = $event"
+                    @update:format="updateFormat"
+                    @update:playoff-teams-count="form.playoff_teams_count = $event"
+                    @update:groups-count="form.groups_count = $event"
+                    @update:regular-phase-matchdays-count="form.regular_phase_matchdays_count = $event"
                     @update:logo-path="form.logo_path = $event"
                 />
             </div>

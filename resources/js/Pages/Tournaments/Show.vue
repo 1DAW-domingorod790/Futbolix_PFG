@@ -4,13 +4,28 @@ import { computed, ref, watch } from 'vue';
 import { route } from 'ziggy-js';
 import FileInput from '@/Components/FileInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import PlayoffBracket from '@/Components/Tournaments/PlayoffBracket.vue';
 import TournamentMatchCard from '@/Components/Tournaments/TournamentMatchCard.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-type TabKey = 'matches' | 'standings' | 'scorers';
+type TabKey = 'matches' | 'standings' | 'scorers' | 'playoffs';
 type StandingRow = { id: number; position: number | null; name: string; badge: string | null; played: number; won: number; drawn: number; lost: number; goals_for: number; goals_against: number; goal_difference: number; points: number };
 type PlayerItem = { id: number; name: string; number: number; goals: number };
 type TeamItem = { id: number; name: string; badge: string | null; position: number | null; players?: PlayerItem[] };
+type BracketTeam = { id: number; name: string; badge: string | null } | null;
+type BracketMatch = {
+    id: number;
+    round_number: number;
+    position: number;
+    status: string;
+    home_score: number | null;
+    away_score: number | null;
+    home_team: BracketTeam;
+    away_team: BracketTeam;
+    winner_team: BracketTeam;
+    next_match_id: number | null;
+};
+type BracketRound = { id: number; name: string; round_number: number; matches_count: number; matches: BracketMatch[] };
 type MatchScorer = { player_id: number; goals: number };
 type MatchTeam = { id: number | null; name: string | null; badge: string | null; players: PlayerItem[] };
 type MatchItem = { id: number; matchday: number | null; scheduled_at: string | null; venue: string | null; status: string | null; home_score: number | null; away_score: number | null; home_scorers: MatchScorer[]; away_scorers: MatchScorer[]; home_team: MatchTeam; away_team: MatchTeam };
@@ -21,6 +36,16 @@ type TournamentDetail = {
     name: string;
     logo_url: string;
     description: string | null;
+    format: {
+        value: string;
+        label: string;
+        has_playoffs: boolean;
+        has_groups: boolean;
+        has_regular_phase: boolean;
+        playoff_teams_count: number | null;
+        groups_count: number | null;
+        regular_phase_matchdays_count: number | null;
+    };
     is_public: boolean;
     can_manage: boolean;
     created_at: string | null;
@@ -30,17 +55,30 @@ type TournamentDetail = {
     standings: StandingRow[];
     matches: MatchItem[];
     top_scorers: TopScorer[];
+    playoffs: {
+        state: string;
+        is_generated: boolean;
+        can_generate: boolean;
+        message: string;
+        current_matchday: number | null;
+        total_matchdays: number | null;
+        playoff_teams_count: number | null;
+        generated_at: string | null;
+        rounds: BracketRound[];
+    };
 };
 type MatchdayGroup = { key: string; label: string; matches: MatchItem[] };
 
 const props = defineProps<{ tournament: TournamentDetail }>();
 const page = usePage<{ flash: { success?: string | null } }>();
+const isDirectPlayoffs = computed(() => props.tournament.format.value === 'playoffs');
 
-const tabs: { key: TabKey; label: string }[] = [
-    { key: 'standings', label: 'Clasificacion' },
-    { key: 'matches', label: 'Partidos programados' },
+const tabs = computed<{ key: TabKey; label: string }[]>(() => [
+    { key: 'standings', label: isDirectPlayoffs.value ? 'Equipos participantes' : 'Clasificacion' },
+    ...(!isDirectPlayoffs.value ? [{ key: 'matches' as const, label: 'Partidos programados' }] : []),
+    ...(props.tournament.format.has_playoffs ? [{ key: 'playoffs' as const, label: 'Playoffs' }] : []),
     { key: 'scorers', label: 'Maximos goleadores' },
-];
+]);
 
 const activeTab = ref<TabKey>('standings');
 const selectedMatchdayKey = ref('');
@@ -63,6 +101,15 @@ const matchForm = useForm({
     home_team_id: '',
     away_team_id: '',
 });
+const generatePlayoffsForm = useForm({
+    playoffs: '',
+});
+const drawForm = useForm({
+    team_ids: [] as number[],
+});
+const manualForm = useForm({
+    matches: [] as { home_team_id: string; away_team_id: string }[],
+});
 
 const matchdayGroups = computed<MatchdayGroup[]>(() => {
     const groups = new Map<string, MatchdayGroup>();
@@ -78,6 +125,8 @@ const matchdayGroups = computed<MatchdayGroup[]>(() => {
 const activeMatchdayGroup = computed(
     () => matchdayGroups.value.find((group) => group.key === selectedMatchdayKey.value) ?? null,
 );
+const expectedFirstRoundMatches = computed(() => Math.max(1, Math.floor((props.tournament.format.playoff_teams_count ?? 2) / 2)));
+const availablePlayoffTeams = computed(() => props.tournament.teams);
 
 function formatDate(date: string | null) {
     if (!date) return 'Fecha pendiente';
@@ -118,6 +167,45 @@ function submitMatch() {
     });
 }
 
+function toggleDrawTeam(teamId: number) {
+    if (drawForm.team_ids.includes(teamId)) {
+        drawForm.team_ids = drawForm.team_ids.filter((selectedTeamId) => selectedTeamId !== teamId);
+        return;
+    }
+
+    drawForm.team_ids = [...drawForm.team_ids, teamId];
+}
+
+function generatePlayoffs() {
+    generatePlayoffsForm.post(route('tournaments.playoffs.generate', props.tournament.id), {
+        preserveScroll: true,
+    });
+}
+
+function submitDraw() {
+    drawForm.post(route('tournaments.playoffs.draw', props.tournament.id), {
+        preserveScroll: true,
+    });
+}
+
+function ensureManualRows() {
+    if (manualForm.matches.length === expectedFirstRoundMatches.value) {
+        return;
+    }
+
+    manualForm.matches = Array.from({ length: expectedFirstRoundMatches.value }, (_, index) => manualForm.matches[index] ?? {
+        home_team_id: '',
+        away_team_id: '',
+    });
+}
+
+function submitManualBracket() {
+    ensureManualRows();
+    manualForm.post(route('tournaments.playoffs.manual', props.tournament.id), {
+        preserveScroll: true,
+    });
+}
+
 function openActionPanel() {
     if (activeTab.value === 'standings') {
         showTeamForm.value = true;
@@ -150,9 +238,15 @@ if (matchdayGroups.value.length && !selectedMatchdayKey.value) {
     selectedMatchdayKey.value = matchdayGroups.value[0].key;
 }
 
+ensureManualRows();
+
 watch(activeTab, () => {
     closeTeamForm();
     closeMatchForm();
+});
+
+watch(expectedFirstRoundMatches, () => {
+    ensureManualRows();
 });
 </script>
 
@@ -187,8 +281,36 @@ watch(activeTab, () => {
                                 <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ tournament.description || 'Este torneo todavia no tiene descripcion.' }}</p>
                                 <div class="mt-4 flex flex-wrap gap-2 text-xs">
                                     <span class="rounded-full bg-futbolix-gold/15 px-3 py-1 font-medium text-futbolix-gold">Codigo {{ tournament.code }}</span>
+                                    <span class="rounded-full bg-futbolix-green/10 px-3 py-1 font-medium text-futbolix-green">Tipo: {{ tournament.format.label }}</span>
                                     <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ tournament.is_public ? 'Visible' : 'Oculto' }}</span>
                                     <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">Creado el {{ formatDate(tournament.created_at) }}</span>
+                                </div>
+                                <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                                    <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+                                        <span class="block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Formato</span>
+                                        <span class="mt-1 block font-semibold text-slate-900 dark:text-white">{{ tournament.format.label }}</span>
+                                    </div>
+                                    <div
+                                        v-if="tournament.format.has_groups"
+                                        class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40"
+                                    >
+                                        <span class="block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Grupos</span>
+                                        <span class="mt-1 block font-semibold text-slate-900 dark:text-white">{{ tournament.format.groups_count }}</span>
+                                    </div>
+                                    <div
+                                        v-if="tournament.format.has_playoffs"
+                                        class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40"
+                                    >
+                                        <span class="block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Equipos en playoffs</span>
+                                        <span class="mt-1 block font-semibold text-slate-900 dark:text-white">{{ tournament.format.playoff_teams_count }}</span>
+                                    </div>
+                                    <div
+                                        v-if="tournament.format.has_regular_phase"
+                                        class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40"
+                                    >
+                                        <span class="block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Jornadas previas</span>
+                                        <span class="mt-1 block font-semibold text-slate-900 dark:text-white">{{ tournament.format.regular_phase_matchdays_count }}</span>
+                                    </div>
                                 </div>
                                 <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">Administrador: {{ tournament.admin.name || 'No disponible' }}</p>
                             </div>
@@ -288,7 +410,7 @@ watch(activeTab, () => {
                             >
                                 {{
                                     activeTab === 'standings'
-                                        ? 'Anadir equipo'
+                                        ? (isDirectPlayoffs ? 'Anadir participante' : 'Anadir equipo')
                                         : 'Anadir partido'
                                 }}
                             </PrimaryButton>
@@ -306,7 +428,41 @@ watch(activeTab, () => {
                     </div>
 
                     <div v-else-if="activeTab === 'standings'" class="space-y-6 px-6 py-6">
-                        <div v-if="tournament.standings.length" class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div
+                            v-if="isDirectPlayoffs && tournament.teams.length"
+                            class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+                        >
+                            <Link
+                                v-for="team in tournament.teams"
+                                :key="team.id"
+                                :href="route('tournaments.teams.show', [tournament.id, team.id])"
+                                class="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-futbolix-green/50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900/40"
+                            >
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                                    <img
+                                        v-if="team.badge"
+                                        :src="team.badge"
+                                        :alt="team.name"
+                                        class="h-full w-full object-cover"
+                                    >
+                                    <span v-else>{{ teamInitials(team.name) }}</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="truncate font-semibold text-slate-900 dark:text-white">
+                                        {{ team.name }}
+                                    </p>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                                        Participante de playoffs
+                                    </p>
+                                </div>
+                            </Link>
+                        </div>
+
+                        <div v-else-if="isDirectPlayoffs" class="rounded-lg border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-600 dark:text-slate-400">
+                            Todavia no hay equipos participantes en este torneo.
+                        </div>
+
+                        <div v-else-if="tournament.standings.length" class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
                             <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
                                 <thead class="bg-slate-50 text-xs uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300"><tr><th class="px-4 py-3">Pos</th><th class="px-4 py-3">Equipo</th><th class="px-4 py-3 text-center">PJ</th><th class="px-4 py-3 text-center">G</th><th class="px-4 py-3 text-center">E</th><th class="px-4 py-3 text-center">P</th><th class="px-4 py-3 text-center">GF</th><th class="px-4 py-3 text-center">GC</th><th class="px-4 py-3 text-center">DG</th><th class="px-4 py-3 text-center">Pts</th></tr></thead>
                                 <tbody>
@@ -324,6 +480,160 @@ watch(activeTab, () => {
                             </table>
                         </div>
                         <div v-else class="rounded-lg border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500 dark:border-slate-600 dark:text-slate-400">Este torneo todavia no tiene equipos en la clasificacion.</div>
+                    </div>
+
+                    <div v-else-if="activeTab === 'playoffs'" class="space-y-6 px-6 py-6">
+                        <div
+                            v-if="!tournament.playoffs.is_generated"
+                            class="rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/40"
+                        >
+                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-futbolix-gold">
+                                        Estado del cuadro
+                                    </p>
+                                    <h2 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">
+                                        Playoffs no generados
+                                    </h2>
+                                    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                        {{ tournament.playoffs.message }}
+                                    </p>
+                                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                                        <span class="rounded-full bg-white px-3 py-1 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                            Clasifican {{ tournament.playoffs.playoff_teams_count ?? tournament.format.playoff_teams_count }} equipos
+                                        </span>
+                                        <span
+                                            v-if="tournament.playoffs.total_matchdays"
+                                            class="rounded-full bg-white px-3 py-1 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                        >
+                                            Jornada {{ tournament.playoffs.current_matchday ?? 0 }} de {{ tournament.playoffs.total_matchdays }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    v-if="tournament.can_manage && tournament.playoffs.can_generate && tournament.format.value !== 'playoffs'"
+                                    type="button"
+                                    :disabled="generatePlayoffsForm.processing"
+                                    class="inline-flex items-center justify-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
+                                    @click="generatePlayoffs"
+                                >
+                                    Generar cuadro
+                                </button>
+                            </div>
+
+                            <p v-if="generatePlayoffsForm.errors.playoffs" class="mt-3 text-sm text-red-500">
+                                {{ generatePlayoffsForm.errors.playoffs }}
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="tournament.can_manage && !tournament.playoffs.is_generated && tournament.format.value === 'playoffs'"
+                            class="grid gap-6 xl:grid-cols-2"
+                        >
+                            <section class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900/40">
+                                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+                                    Sorteo automatico
+                                </h3>
+                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                    Selecciona los equipos participantes y genera cruces aleatorios.
+                                </p>
+
+                                <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                                    <label
+                                        v-for="team in availablePlayoffTeams"
+                                        :key="`draw-${team.id}`"
+                                        class="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            class="rounded border-slate-300 text-futbolix-green focus:ring-futbolix-green"
+                                            :checked="drawForm.team_ids.includes(team.id)"
+                                            @change="toggleDrawTeam(team.id)"
+                                        >
+                                        <span class="truncate">{{ team.name }}</span>
+                                    </label>
+                                </div>
+
+                                <p v-if="drawForm.errors.team_ids" class="mt-3 text-sm text-red-500">
+                                    {{ drawForm.errors.team_ids }}
+                                </p>
+
+                                <div class="mt-5 flex justify-end">
+                                    <button
+                                        type="button"
+                                        :disabled="drawForm.processing"
+                                        class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
+                                        @click="submitDraw"
+                                    >
+                                        Sortear eliminatorias
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900/40">
+                                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
+                                    Eliminatorias manuales
+                                </h3>
+                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                    Define cada cruce de la primera ronda sin repetir equipos.
+                                </p>
+
+                                <div class="mt-4 space-y-4">
+                                    <div
+                                        v-for="(manualMatch, index) in manualForm.matches"
+                                        :key="`manual-${index}`"
+                                        class="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800"
+                                    >
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                                            Eliminatoria {{ index + 1 }}
+                                        </p>
+                                        <div class="grid gap-3 sm:grid-cols-2">
+                                            <select
+                                                v-model="manualMatch.home_team_id"
+                                                class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                                            >
+                                                <option value="">Equipo local</option>
+                                                <option v-for="team in availablePlayoffTeams" :key="`manual-home-${index}-${team.id}`" :value="String(team.id)">
+                                                    {{ team.name }}
+                                                </option>
+                                            </select>
+                                            <select
+                                                v-model="manualMatch.away_team_id"
+                                                class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-futbolix-green focus:outline-none focus:ring-1 focus:ring-futbolix-green dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                                            >
+                                                <option value="">Equipo visitante</option>
+                                                <option v-for="team in availablePlayoffTeams" :key="`manual-away-${index}-${team.id}`" :value="String(team.id)">
+                                                    {{ team.name }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p v-if="manualForm.errors.matches" class="mt-3 text-sm text-red-500">
+                                    {{ manualForm.errors.matches }}
+                                </p>
+
+                                <div class="mt-5 flex justify-end">
+                                    <button
+                                        type="button"
+                                        :disabled="manualForm.processing"
+                                        class="inline-flex items-center rounded-lg bg-futbolix-green px-4 py-2 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark disabled:opacity-60"
+                                        @click="submitManualBracket"
+                                    >
+                                        Guardar cuadro manual
+                                    </button>
+                                </div>
+                            </section>
+                        </div>
+
+                        <PlayoffBracket
+                            :tournament-id="tournament.id"
+                            :rounds="tournament.playoffs.rounds"
+                            :state="tournament.playoffs.state"
+                            :generated-at="tournament.playoffs.generated_at"
+                        />
                     </div>
 
                     <div v-else class="px-6 py-6">
