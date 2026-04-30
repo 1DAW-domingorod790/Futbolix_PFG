@@ -227,12 +227,18 @@ function closeTeamForm() {
     teamForm.clearErrors();
 }
 
+function deleteTournament() {
+    if (!window.confirm('¿Seguro que quieres eliminar este torneo? Esta acción no se puede deshacer.')) return;
+    useForm({}).delete(route('tournaments.destroy', props.tournament.id));
+}
+
 function closeMatchForm() {
     showMatchForm.value = false;
     matchForm.reset();
     matchForm.matchday = '1';
     matchForm.clearErrors();
 }
+
 
 if (matchdayGroups.value.length && !selectedMatchdayKey.value) {
     selectedMatchdayKey.value = matchdayGroups.value[0].key;
@@ -325,14 +331,24 @@ watch(expectedFirstRoundMatches, () => {
                             </div>
                         </div>
 
-                        <button
-                            v-if="tournament.can_manage"
-                            type="button"
-                            class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-                            @click="showEditPanel = !showEditPanel"
-                        >
-                            {{ showEditPanel ? 'Cerrar edicion' : 'Editar' }}
-                        </button>
+                        <div v-if="tournament.can_manage" class="flex flex-col gap-2">
+                            <button
+                                type="button"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                                @click="showEditPanel = !showEditPanel"
+                            >
+                                {{ showEditPanel ? 'Cerrar edicion' : 'Editar' }}
+                            </button>
+                            <a
+                                :href="route('tournaments.export-csv', tournament.id)"
+                                class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-400/50 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4 4l-4-4m0 0l-4 4m4-4V4" />
+                                </svg>
+                                Exportar CSV
+                            </a>
+                        </div>
                     </div>
                 </section>
 
@@ -385,7 +401,18 @@ watch(expectedFirstRoundMatches, () => {
                             <p v-if="settingsForm.errors.description" class="mt-2 text-sm text-red-500">{{ settingsForm.errors.description }}</p>
                         </div>
 
-                        <div class="flex justify-end">
+                        <div class="flex items-center justify-between">
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/20"
+                                @click="deleteTournament"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Eliminar torneo
+                            </button>
+
                             <button
                                 type="submit"
                                 :disabled="settingsForm.processing"

@@ -57,7 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'showTeam'])->name('tournaments.teams.show');
     Route::get('/tournament-teams/{team}/badge', [TournamentController::class, 'showTeamBadge'])->name('tournaments.teams.badge');
     Route::post('/tournaments', [TournamentController::class, 'store'])->name('tournaments.store');
+    Route::post('/tournaments/import-csv', [TournamentController::class, 'importTournamentCsv'])->name('tournaments.import-tournament-csv');
     Route::patch('/tournaments/{tournament}', [TournamentController::class, 'update'])->name('tournaments.update');
+    Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
     Route::patch('/tournaments/{tournament}/teams/{team}', [TournamentController::class, 'updateTeam'])->name('tournaments.teams.update');
     Route::post('/tournaments/{tournament}/teams', [TournamentController::class, 'storeTeam'])->name('tournaments.teams.store');
     Route::post('/tournaments/{tournament}/matches', [TournamentController::class, 'storeMatch'])->name('tournaments.matches.store');
@@ -67,6 +69,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/tournaments/{tournament}/playoffs/matches/{match}/result', [PlayoffController::class, 'updateResult'])->name('tournaments.playoffs.matches.result');
     Route::post('/tournaments/{tournament}/teams/{team}/players', [TournamentController::class, 'storePlayer'])->name('tournaments.teams.players.store');
     Route::patch('/tournaments/{tournament}/matches/{match}/result', [TournamentController::class, 'updateMatchResult'])->name('tournaments.matches.result');
+    Route::post('/tournaments/{tournament}/import-csv', [TournamentController::class, 'importCsv'])->name('tournaments.import-csv');
+    Route::get('/tournaments/{tournament}/export-csv', [TournamentController::class, 'exportCsv'])->name('tournaments.export-csv');
 
     Route::post('/api/predictions/match', [MatchPredictionController::class, 'store'])
         ->name('predictions.match');
