@@ -6,6 +6,7 @@ use App\Models\Api\Competition;
 use App\Models\Api\Game;
 use App\Models\Api\Team;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class SyncGames extends Command
@@ -39,10 +40,12 @@ class SyncGames extends Command
      */
     public function handle(): int
     {
+        DB::connection()->getPdo()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+
         $syncedGames = 0;
 
         foreach ($this->competitionIds as $competitionId) {
-            $response = Http::withHeaders([
+            $response = Http::withoutVerifying()->withHeaders([
                 'X-Auth-Token' => config('services.football_data.api_key'),
             ])->baseUrl(config('services.football_data.base_url'))
                 ->get("competitions/{$competitionId}/matches");

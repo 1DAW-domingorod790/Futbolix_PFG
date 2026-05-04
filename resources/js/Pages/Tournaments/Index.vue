@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 import { route } from 'ziggy-js';
 import TournamentEmptyState from '@/Components/Tournaments/TournamentEmptyState.vue';
 import TournamentList from '@/Components/Tournaments/TournamentList.vue';
@@ -39,6 +40,29 @@ const page = usePage<{
         success?: string | null;
     };
 }>();
+
+const showFlash = ref(!!page.props.flash?.success);
+let flashTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(() => page.props.flash?.success, (val) => {
+    if (val) {
+        showFlash.value = true;
+        if (flashTimer) clearTimeout(flashTimer);
+        flashTimer = setTimeout(() => { showFlash.value = false; }, 4000);
+    }
+}, { immediate: true });
+
+const csvForm = useForm({ csv: null as File | null });
+
+function onCsvImport(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    csvForm.csv = file;
+    csvForm.post(route('tournaments.import-tournament-csv'), {
+        forceFormData: true,
+        onSuccess: () => { csvForm.reset(); (e.target as HTMLInputElement).value = ''; },
+    });
+}
 </script>
 
 <template>
@@ -62,20 +86,36 @@ const page = usePage<{
                             </p>
                         </div>
 
-                        <Link
-                            :href="route('tournaments.create')"
-                            class="inline-flex items-center justify-center rounded-lg bg-futbolix-green px-5 py-3 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark"
-                        >
-                            Crear torneo
-                        </Link>
+                        <div class="flex gap-2">
+                            <label class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-futbolix-green/50 bg-futbolix-green/10 px-5 py-3 text-sm font-semibold text-futbolix-green transition hover:bg-futbolix-green/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                {{ csvForm.processing ? 'Importando...' : 'Importar CSV' }}
+                                <input type="file" accept=".csv" class="hidden" :disabled="csvForm.processing" @change="onCsvImport" />
+                            </label>
+                            <Link
+                                :href="route('tournaments.create')"
+                                class="inline-flex items-center justify-center rounded-lg bg-futbolix-green px-5 py-3 text-sm font-semibold text-white transition hover:bg-futbolix-green-dark"
+                            >
+                                Crear torneo
+                            </Link>
+                        </div>
                     </div>
                 </section>
 
                 <div
-                    v-if="page.props.flash?.success"
+                    v-if="showFlash && page.props.flash?.success"
                     class="rounded-2xl border border-futbolix-green/30 bg-futbolix-green/10 px-4 py-3 text-sm text-futbolix-green"
                 >
                     {{ page.props.flash.success }}
+                </div>
+
+                <div
+                    v-if="(page.props.flash as any)?.error"
+                    class="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-400"
+                >
+                    {{ (page.props.flash as any).error }}
                 </div>
 
                 <section class="space-y-4">

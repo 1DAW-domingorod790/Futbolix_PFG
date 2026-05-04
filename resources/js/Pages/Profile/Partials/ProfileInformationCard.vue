@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-const user = usePage().props.auth.user;
+const page = usePage();
+const user = computed(() => page.props.auth.user as any);
 </script>
 
 <template>
@@ -10,10 +12,14 @@ const user = usePage().props.auth.user;
         <div class="relative">
             <div class="h-50 w-50 overflow-hidden rounded-2xl ring-4 ring-green-100 shadow-lg">
                 <img
+                    v-if="user.avatar_url"
                     :src="user.avatar_url"
                     :alt="user.name"
                     class="h-full w-full object-cover"
                 />
+                <div v-else class="flex h-full w-full items-center justify-center bg-futbolix-green text-4xl font-bold text-white">
+                    {{ user.name?.charAt(0).toUpperCase() }}
+                </div>
             </div>
             <!-- Badge de estado online -->
             <div class="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 ring-2 ring-white">

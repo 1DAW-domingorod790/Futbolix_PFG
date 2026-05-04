@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Api\Competition;
 use App\Models\Api\Team;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class SyncTeams extends Command
@@ -37,6 +38,8 @@ class SyncTeams extends Command
      */
     public function handle(): int
     {
+        DB::connection()->getPdo()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
+
         $competitions = Competition::query()
             ->whereIn('external_id', $this->competitionIds)
             ->get();
@@ -50,7 +53,7 @@ class SyncTeams extends Command
         $syncedTeams = 0;
 
         foreach ($competitions as $competition) {
-            $response = Http::withHeaders([
+            $response = Http::withoutVerifying()->withHeaders([
                 'X-Auth-Token' => config('services.football_data.api_key'),
             ])->baseUrl(config('services.football_data.base_url'))
                 ->get("competitions/{$competition->external_id}/teams");

@@ -36,43 +36,13 @@ class TournamentController extends Controller
                 ->tournaments()
                 ->with('admin:id,name')
                 ->latest()
-                ->get([
-                    'id',
-                    'code',
-                    'name',
-                    'description',
-                    'format',
-                    'playoff_teams_count',
-                    'groups_count',
-                    'regular_phase_matchdays_count',
-                    'current_matchday',
-                    'playoff_bracket_generated_at',
-                    'created_at',
-                    'admin_id',
-                    'logo_path',
-                    'is_public',
-                ])),
+                ->get(['id', 'code', 'name', 'description', 'format', 'playoff_teams_count', 'groups_count', 'regular_phase_matchdays_count', 'current_matchday', 'playoff_bracket_generated_at', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
             'publicTournaments' => $this->buildTournamentCards(Tournament::query()
                 ->with('admin:id,name')
-                ->where('is_public', true)
+                ->whereRaw('"is_public" = TRUE')
                 ->where('admin_id', '!=', $user->id)
                 ->latest()
-                ->get([
-                    'id',
-                    'code',
-                    'name',
-                    'description',
-                    'format',
-                    'playoff_teams_count',
-                    'groups_count',
-                    'regular_phase_matchdays_count',
-                    'current_matchday',
-                    'playoff_bracket_generated_at',
-                    'created_at',
-                    'admin_id',
-                    'logo_path',
-                    'is_public',
-                ])),
+                ->get(['id', 'code', 'name', 'description', 'format', 'playoff_teams_count', 'groups_count', 'regular_phase_matchdays_count', 'current_matchday', 'playoff_bracket_generated_at', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
         ]);
     }
 
@@ -83,7 +53,7 @@ class TournamentController extends Controller
         ]);
     }
 
-    public function show(Tournament $tournament, PlayoffBracketService $playoffBracketService): Response
+    public function show(Tournament $tournament): Response
     {
         abort_unless($this->canAccessTournament($tournament), 403);
 
@@ -129,7 +99,7 @@ class TournamentController extends Controller
                 'standings' => $standings->values(),
                 'matches' => $matches->values(),
                 'top_scorers' => $topScorers->values(),
-                'playoffs' => $this->serializePlayoffs($tournament, $playoffBracketService),
+                'playoffs' => $this->serializePlayoffs($tournament, app(PlayoffBracketService::class)),
             ],
         ]);
     }
@@ -271,7 +241,7 @@ class TournamentController extends Controller
             'groups_count' => $this->groupsCountFor($validated),
             'regular_phase_matchdays_count' => $this->regularPhaseMatchdaysCountFor($validated),
             'logo_path' => $request->file('logo_path')?->store('tournaments', 'public'),
-            'is_public' => false,
+            'is_public' => \Illuminate\Support\Facades\DB::raw('false'),
             'admin_id' => $request->user()->id,
         ]);
 
@@ -293,7 +263,7 @@ class TournamentController extends Controller
         $tournament->update([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
-            'is_public' => $validated['is_public'] ?? false,
+            'is_public' => \Illuminate\Support\Facades\DB::raw(($validated['is_public'] ?? false) ? 'true' : 'false'),
             'logo_path' => $request->hasFile('logo_path')
                 ? $request->file('logo_path')->store('tournaments', 'public')
                 : $tournament->logo_path,
@@ -302,6 +272,28 @@ class TournamentController extends Controller
         return redirect()
             ->route('tournaments.show', $tournament)
             ->with('success', 'La configuracion del torneo se ha actualizado.');
+    }
+
+    public function destroy(Tournament $tournament): RedirectResponse
+    {
+        abort_unless($this->canManageTournament($tournament), 403);
+
+        if ($tournament->logo_path && !str_starts_with($tournament->logo_path, 'http')) {
+            Storage::disk('public')->delete($tournament->logo_path);
+        }
+
+        DB::transaction(function () use ($tournament) {
+            $teamIds = $tournament->teams()->pluck('id');
+
+            TournamentPlayer::whereIn('team_id', $teamIds)->delete();
+            $tournament->matches()->delete();
+            $tournament->playoffMatches()->delete();
+            $tournament->playoffRounds()->delete();
+            $tournament->teams()->delete();
+            $tournament->delete();
+        });
+
+        return redirect()->route('tournaments.index')->with('success', 'Torneo eliminado correctamente.');
     }
 
     public function updateTeam(
@@ -473,6 +465,17 @@ class TournamentController extends Controller
         } while (TournamentTeam::where('code', $code)->exists());
 
         return $code;
+    }
+
+    private function resolveUniqueDni(string $candidate): string
+    {
+        $dni = $candidate ?: strtoupper(substr(md5(uniqid()), 0, 8));
+
+        while (TournamentPlayer::where('dni', $dni)->exists()) {
+            $dni = strtoupper(substr(md5(uniqid()), 0, 8));
+        }
+
+        return $dni;
     }
 
     private function buildStandings(Tournament $tournament): Collection
@@ -1023,5 +1026,225 @@ class TournamentController extends Controller
             'name' => $team->name,
             'badge' => $team->badge_url,
         ];
+    }
+
+    public function importTournamentCsv(\Illuminate\Http\Request $request): RedirectResponse
+    {
+        $request->validate(['csv' => ['required', 'file', 'mimes:csv,txt', 'max:2048']]);
+
+        $path = $request->file('csv')->getRealPath();
+        $handle = fopen($path, 'r');
+
+        // Eliminar BOM UTF-8 si existe
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        $headers = array_map('trim', fgetcsv($handle) ?: []);
+        $headerCount = count($headers);
+
+        $tournament = null;
+        $teams = [];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            // Igualar número de columnas para que array_combine no falle
+            $row = array_map('trim', $row);
+            while (count($row) < $headerCount) $row[] = '';
+            $row = array_slice($row, 0, $headerCount);
+
+            $data = array_combine($headers, $row);
+            $tipo = strtolower($data['tipo'] ?? '');
+
+            if ($tipo === 'torneo') {
+                $formato = \App\Enums\Tournaments\TournamentFormat::tryFrom(strtolower($data['formato'] ?? 'league')) ?? \App\Enums\Tournaments\TournamentFormat::League;
+                $tournament = Tournament::create([
+                    'name' => $data['nombre'] ?? 'Torneo importado',
+                    'description' => ($data['descripcion'] ?? '') ?: null,
+                    'format' => $formato->value,
+                    'is_public' => \Illuminate\Support\Facades\DB::raw('false'),
+                    'admin_id' => auth()->id(),
+                    'code' => rand(100000, 999999),
+                ]);
+
+            } elseif ($tipo === 'equipo' && $tournament) {
+                $nombre = $data['equipo'] ?? '';
+                if (!$nombre) continue;
+                $team = TournamentTeam::create([
+                    'tournament_id' => $tournament->id,
+                    'name' => $nombre,
+                    'code' => $this->generateUniqueTeamCode(),
+                    'position' => null,
+                ]);
+                $teams[$nombre] = $team->id;
+
+            } elseif ($tipo === 'jugador' && $tournament) {
+                $nombreEquipo = $data['equipo'] ?? '';
+                if (!isset($teams[$nombreEquipo])) continue;
+                TournamentPlayer::create([
+                    'team_id' => $teams[$nombreEquipo],
+                    'dni' => $this->resolveUniqueDni($data['dni'] ?? ''),
+                    'name' => $data['jugador'] ?? '',
+                    'number' => (int) ($data['numero'] ?? 0),
+                    'age' => ($data['edad'] ?? null) ?: null,
+                ]);
+
+            } elseif ($tipo === 'partido' && $tournament) {
+                $localNombre = $data['equipo_local'] ?? '';
+                $visitanteNombre = $data['equipo_visitante'] ?? '';
+                if (!isset($teams[$localNombre]) || !isset($teams[$visitanteNombre])) continue;
+
+                $golesLocal = ($data['goles_local'] ?? '') !== '' ? (int) $data['goles_local'] : null;
+                $golesVisitante = ($data['goles_visitante'] ?? '') !== '' ? (int) $data['goles_visitante'] : null;
+
+                TournamentMatch::create([
+                    'tournament_id' => $tournament->id,
+                    'matchday' => (int) ($data['jornada'] ?? 1),
+                    'home_team_id' => $teams[$localNombre],
+                    'away_team_id' => $teams[$visitanteNombre],
+                    'home_score' => $golesLocal,
+                    'away_score' => $golesVisitante,
+                    'status' => ($golesLocal !== null && $golesVisitante !== null) ? 'FINISHED' : 'SCHEDULED',
+                    'scheduled_at' => ($data['fecha'] ?? '') ?: null,
+                    'venue' => ($data['estadio'] ?? '') ?: null,
+                ]);
+            }
+        }
+
+        fclose($handle);
+
+        if (!$tournament) {
+            return redirect()->route('tournaments.index')->with('error', 'El CSV no contiene una fila de tipo "torneo".');
+        }
+
+        return redirect()->route('tournaments.show', $tournament)->with('success', 'Torneo importado correctamente desde CSV.');
+    }
+
+    public function exportCsv(Tournament $tournament): \Illuminate\Http\Response
+    {
+        abort_unless($this->canManageTournament($tournament), 403);
+
+        $tournament->load(['teams.players', 'matches.homeTeam', 'matches.awayTeam']);
+
+        $handle = fopen('php://temp', 'r+');
+
+        fputcsv($handle, ['tipo', 'nombre', 'descripcion', 'formato', 'equipo', 'jugador', 'dni', 'numero', 'edad', 'jornada', 'equipo_local', 'equipo_visitante', 'goles_local', 'goles_visitante', 'fecha', 'estadio']);
+        fputcsv($handle, ['torneo', $tournament->name, $tournament->description ?? '', $tournament->format->value, '', '', '', '', '', '', '', '', '', '', '', '']);
+
+        foreach ($tournament->teams as $team) {
+            fputcsv($handle, ['equipo', '', '', '', $team->name, '', '', '', '', '', '', '', '', '', '', '']);
+            foreach ($team->players as $player) {
+                fputcsv($handle, ['jugador', '', '', '', $team->name, $player->name, $player->dni ?? '', $player->number, $player->age ?? '', '', '', '', '', '', '', '']);
+            }
+        }
+
+        foreach ($tournament->matches as $match) {
+            fputcsv($handle, ['partido', '', '', '', '', '', '', '', '', $match->matchday, $match->homeTeam?->name ?? '', $match->awayTeam?->name ?? '', $match->home_score ?? '', $match->away_score ?? '', $match->scheduled_at?->format('Y-m-d H:i') ?? '', $match->venue ?? '']);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="torneo-' . $tournament->id . '.csv"',
+        ]);
+    }
+
+    public function importCsv(Tournament $tournament, \Illuminate\Http\Request $request): RedirectResponse
+    {
+        abort_unless($this->canManageTournament($tournament), 403);
+
+        $request->validate(['csv' => ['required', 'file', 'mimes:csv,txt', 'max:2048']]);
+
+        $path = $request->file('csv')->getRealPath();
+        $handle = fopen($path, 'r');
+
+        $headers = array_map('trim', fgetcsv($handle) ?: []);
+        $teams = [];
+        $errors = [];
+        $imported = ['equipos' => 0, 'jugadores' => 0, 'partidos' => 0];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $data = array_combine($headers, array_map('trim', $row));
+            $tipo = strtolower($data['tipo'] ?? '');
+
+            if ($tipo === 'equipo') {
+                $nombre = $data['equipo'] ?? '';
+                if (!$nombre) continue;
+
+                $team = TournamentTeam::firstOrCreate(
+                    ['tournament_id' => $tournament->id, 'name' => $nombre],
+                    ['code' => $this->generateUniqueTeamCode(), 'position' => null]
+                );
+                $teams[$nombre] = $team->id;
+                $imported['equipos']++;
+
+            } elseif ($tipo === 'jugador') {
+                $nombreEquipo = $data['equipo'] ?? '';
+                if (!isset($teams[$nombreEquipo])) {
+                    $team = TournamentTeam::where('tournament_id', $tournament->id)->where('name', $nombreEquipo)->first();
+                    if (!$team) { $errors[] = "Equipo '{$nombreEquipo}' no encontrado para jugador '{$data['jugador']}'."; continue; }
+                    $teams[$nombreEquipo] = $team->id;
+                }
+
+                TournamentPlayer::firstOrCreate(
+                    ['team_id' => $teams[$nombreEquipo], 'name' => $data['jugador'] ?? ''],
+                    [
+                        'dni' => $this->resolveUniqueDni($data['dni'] ?? ''),
+                        'number' => (int) ($data['numero'] ?? 0),
+                        'age' => ($data['edad'] ?? null) ?: null,
+                    ]
+                );
+                $imported['jugadores']++;
+
+            } elseif ($tipo === 'partido') {
+                $localNombre = $data['equipo_local'] ?? '';
+                $visitanteNombre = $data['equipo_visitante'] ?? '';
+
+                foreach ([$localNombre, $visitanteNombre] as $n) {
+                    if (!isset($teams[$n])) {
+                        $t = TournamentTeam::where('tournament_id', $tournament->id)->where('name', $n)->first();
+                        if ($t) $teams[$n] = $t->id;
+                    }
+                }
+
+                if (!isset($teams[$localNombre]) || !isset($teams[$visitanteNombre])) {
+                    $errors[] = "Partido ignorado: equipo '{$localNombre}' o '{$visitanteNombre}' no encontrado.";
+                    continue;
+                }
+
+                $golesLocal = ($data['goles_local'] ?? '') !== '' ? (int) $data['goles_local'] : null;
+                $golesVisitante = ($data['goles_visitante'] ?? '') !== '' ? (int) $data['goles_visitante'] : null;
+                $status = ($golesLocal !== null && $golesVisitante !== null) ? 'FINISHED' : 'SCHEDULED';
+
+                TournamentMatch::updateOrCreate(
+                    [
+                        'tournament_id' => $tournament->id,
+                        'matchday' => (int) ($data['jornada'] ?? 1),
+                        'home_team_id' => $teams[$localNombre],
+                        'away_team_id' => $teams[$visitanteNombre],
+                    ],
+                    [
+                        'home_score' => $golesLocal,
+                        'away_score' => $golesVisitante,
+                        'status' => $status,
+                        'scheduled_at' => ($data['fecha'] ?? '') ?: null,
+                        'venue' => ($data['estadio'] ?? '') ?: null,
+                    ]
+                );
+                $imported['partidos']++;
+            }
+        }
+
+        fclose($handle);
+
+        $msg = "CSV importado: {$imported['equipos']} equipos, {$imported['jugadores']} jugadores, {$imported['partidos']} partidos.";
+        if ($errors) {
+            $msg .= ' Advertencias: ' . implode(' | ', $errors);
+        }
+
+        return redirect()->route('tournaments.show', $tournament)->with('success', $msg);
     }
 }
