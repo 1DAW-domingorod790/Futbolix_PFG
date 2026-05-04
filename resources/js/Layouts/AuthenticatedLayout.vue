@@ -36,10 +36,37 @@ const isAdmin = computed(() => (page.props.auth as any).is_admin);
                             </div>
 
                             <div class="hidden space-x-1 sm:ms-8 sm:flex">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">Dashboard</NavLink>
-                                <NavLink :href="route('matches.index')" :active="route().current('matches.index')">Partidos</NavLink>
-                                <NavLink :href="route('tournaments.index')" :active="route().current('tournaments.*')">Torneos</NavLink>
-                                <NavLink v-if="isAdmin" :href="route('admin.users')" :active="route().current('admin.users')">Gestión de usuarios</NavLink>
+                                <NavLink
+                                    :href="route('dashboard')"
+                                    :active="route().current('dashboard')"
+                                >
+                                    Dashboard
+                                </NavLink>
+                                <NavLink
+                                    :href="route('matches.index')"
+                                    :active="route().current('matches.index')"
+                                >
+                                    Partidos
+                                </NavLink>
+                                <NavLink
+                                    :href="route('tournaments.index')"
+                                    :active="route().current('tournaments.*')"
+                                >
+                                    Torneos
+                                </NavLink>
+                                <NavLink
+                                    :href="route('futbolix-ai.index')"
+                                    :active="route().current('futbolix-ai.*')"
+                                >
+                                    Futbolix AI
+                                </NavLink>
+                                <NavLink
+                                    v-if="$page.props.auth.is_admin"
+                                    :href="route('admin.users')"
+                                    :active="route().current('admin.users')"
+                                >
+                                    Gestión de usuarios
+                                </NavLink>
                             </div>
                         </div>
 
@@ -113,7 +140,18 @@ const isAdmin = computed(() => (page.props.auth as any).is_admin);
                 <!-- Menú responsivo -->
                 <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
                     <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">Dashboard</ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                            Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('matches.index')" :active="route().current('matches.*')">
+                            Partidos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('tournaments.index')" :active="route().current('tournaments.*')">
+                            Torneos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('futbolix-ai.index')" :active="route().current('futbolix-ai.*')">
+                            Futbolix AI
+                        </ResponsiveNavLink>
                     </div>
 
                     <div class="border-t border-slate-700 pb-1 pt-4">

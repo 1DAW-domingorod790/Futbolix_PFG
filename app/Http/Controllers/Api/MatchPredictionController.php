@@ -65,7 +65,7 @@ class MatchPredictionController extends Controller
                 ->acceptJson()
                 ->timeout(20)
                 ->post('https://api.groq.com/openai/v1/chat/completions', [
-                    'model' => 'llama-3.3-70b-versatile',
+                    'model' => (string) config('futbolix_ai.model'),
                     'temperature' => 0.4,
                     'response_format' => ['type' => 'json_object'],
                     'messages' => [

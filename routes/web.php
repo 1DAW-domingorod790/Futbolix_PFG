@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Ai\AiConversationController;
+use App\Http\Controllers\Ai\FutbolixAiPageController;
 use App\Http\Controllers\Api\MatchPredictionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\PasswordController as SettingsPasswordController;
@@ -48,6 +50,14 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/futbolix-ai', FutbolixAiPageController::class)->name('futbolix-ai.index');
+    Route::get('/api/futbolix-ai/conversations', [AiConversationController::class, 'index'])->name('futbolix-ai.conversations.index');
+    Route::post('/api/futbolix-ai/conversations', [AiConversationController::class, 'store'])->name('futbolix-ai.conversations.store');
+    Route::get('/api/futbolix-ai/conversations/{conversation}', [AiConversationController::class, 'show'])->name('futbolix-ai.conversations.show');
+    Route::post('/api/futbolix-ai/conversations/{conversation}/messages', [AiConversationController::class, 'send'])->name('futbolix-ai.conversations.messages.store');
+    Route::delete('/api/futbolix-ai/conversations/{conversation}', [AiConversationController::class, 'destroy'])->name('futbolix-ai.conversations.destroy');
+    Route::get('/api/futbolix-ai/credits', [AiConversationController::class, 'credits'])->name('futbolix-ai.credits');
+
     Route::get('/tournaments', [TournamentController::class, 'index'])->name('tournaments.index');
     Route::get('/tournaments/create', [TournamentController::class, 'create'])->name('tournaments.create');
     Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
