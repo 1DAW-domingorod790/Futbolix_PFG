@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-vue-next';
+import { Bot, BookOpen, CalendarDays, FolderGit2, LayoutGrid, Trophy } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -22,6 +22,21 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Partidos',
+        href: '/matches',
+        icon: CalendarDays,
+    },
+    {
+        title: 'Torneos',
+        href: '/tournaments',
+        icon: Trophy,
+    },
+    {
+        title: 'Futbolix AI',
+        href: '/futbolix-ai',
+        icon: Bot,
     },
 ];
 

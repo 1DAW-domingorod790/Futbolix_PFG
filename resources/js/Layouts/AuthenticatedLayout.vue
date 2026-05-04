@@ -52,6 +52,12 @@ const { isDark, toggle } = useTheme();
                                     Torneos
                                 </NavLink>
                                 <NavLink
+                                    :href="route('futbolix-ai.index')"
+                                    :active="route().current('futbolix-ai.*')"
+                                >
+                                    Futbolix AI
+                                </NavLink>
+                                <NavLink
                                     v-if="$page.props.auth.is_admin"
                                     :href="route('admin.users')"
                                     :active="route().current('admin.users')"
@@ -136,6 +142,15 @@ const { isDark, toggle } = useTheme();
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('matches.index')" :active="route().current('matches.*')">
+                            Partidos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('tournaments.index')" :active="route().current('tournaments.*')">
+                            Torneos
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('futbolix-ai.index')" :active="route().current('futbolix-ai.*')">
+                            Futbolix AI
                         </ResponsiveNavLink>
                     </div>
 

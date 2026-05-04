@@ -4,10 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use App\Models\Ai\Conversation;
+use App\Models\Ai\UsageLog;
+use App\Models\Ai\UserPlan;
 use App\Models\Role;
 use App\Models\Tournaments\Tournament;
 use Illuminate\Support\Facades\Storage;
@@ -53,6 +57,21 @@ class User extends Authenticatable
     public function tournaments(): HasMany
     {
         return $this->hasMany(Tournament::class, 'admin_id');
+    }
+
+    public function aiConversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
+    public function aiPlan(): HasOne
+    {
+        return $this->hasOne(UserPlan::class);
+    }
+
+    public function aiUsageLogs(): HasMany
+    {
+        return $this->hasMany(UsageLog::class);
     }
 
     /**
