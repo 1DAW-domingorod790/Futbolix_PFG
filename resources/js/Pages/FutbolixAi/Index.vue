@@ -238,8 +238,8 @@ onMounted(async () => {
     <Head title="Futbolix AI" />
 
     <AuthenticatedLayout>
-        <div class="min-h-[calc(100vh-4rem)] bg-slate-100 text-slate-950 dark:bg-[#0f172a] dark:text-white">
-            <div class="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:px-6">
+        <div class="h-[calc(100vh-4rem)] bg-slate-100 text-slate-950 dark:bg-[#0f172a] dark:text-white">
+            <div class="mx-auto flex h-full max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:px-6">
                 <aside class="flex w-full flex-col rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-futbolix-dark lg:w-80">
                     <div class="border-b border-slate-200 p-4 dark:border-slate-700">
                         <button
@@ -317,7 +317,7 @@ onMounted(async () => {
                     </div>
                 </aside>
 
-                <main class="flex min-h-[72vh] flex-1 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-futbolix-dark">
+                <main class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-futbolix-dark">
                     <header class="border-b border-slate-200 px-5 py-4 dark:border-slate-700">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex items-center gap-3">
@@ -344,7 +344,7 @@ onMounted(async () => {
                             Cargando conversacion...
                         </div>
 
-                        <div v-else-if="messages.length === 0" class="mx-auto flex max-w-3xl flex-col items-center justify-center py-12 text-center">
+                        <div v-else-if="messages.length === 0" class="mx-auto flex max-w-3xl flex-col items-center justify-center py-12 text-center overflow-y-auto">
                             <div class="mb-5 flex h-16 w-16 items-center justify-center rounded-lg bg-futbolix-green/10 text-futbolix-green">
                                 <Sparkles class="h-8 w-8" />
                             </div>
