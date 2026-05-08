@@ -22,6 +22,8 @@ return new class extends Migration
             $table->foreignId('away_team_id')->constrained('tournament_teams')->cascadeOnDelete();
             $table->unsignedInteger('home_score')->nullable();
             $table->unsignedInteger('away_score')->nullable();
+            $table->json('home_scorers')->nullable();
+            $table->json('away_scorers')->nullable();
             $table->timestamps();
         });
     }

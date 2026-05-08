@@ -56,7 +56,7 @@ test('tournament detail page can be rendered for the tournament owner', function
         'dni' => '12345678A',
         'name' => 'Carlos Gomez',
         'number' => 9,
-        'age' => 23,
+        'birth_date' => '2003-05-12',
         'goals' => 2,
         'team_id' => $homeTeam->id,
     ]);

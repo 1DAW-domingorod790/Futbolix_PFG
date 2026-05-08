@@ -14,10 +14,14 @@ class TournamentPlayer extends Model
         'dni',
         'name',
         'number',
-        'age',
+        'birth_date',
         'photo_path',
         'team_id',
         'goals',
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
     ];
 
     public function team(): BelongsTo

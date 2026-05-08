@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('dni')->unique();
             $table->string('name');
             $table->integer('number');
-            $table->integer('age')->nullable();
+            $table->date('birth_date')->nullable();
             $table->foreignId('team_id')->constrained('tournament_teams')->cascadeOnDelete();
+            $table->unsignedInteger('goals')->default(0);
+            $table->string('photo_path')->nullable();
             $table->timestamps();
         });
     }

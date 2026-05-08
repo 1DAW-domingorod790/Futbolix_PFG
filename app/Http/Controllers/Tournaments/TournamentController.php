@@ -39,7 +39,7 @@ class TournamentController extends Controller
                 ->get(['id', 'code', 'name', 'description', 'format', 'playoff_teams_count', 'groups_count', 'regular_phase_matchdays_count', 'current_matchday', 'playoff_bracket_generated_at', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
             'publicTournaments' => $this->buildTournamentCards(Tournament::query()
                 ->with('admin:id,name')
-                ->whereRaw('"is_public" = TRUE')
+                ->where('is_public', true)
                 ->where('admin_id', '!=', $user->id)
                 ->latest()
                 ->get(['id', 'code', 'name', 'description', 'format', 'playoff_teams_count', 'groups_count', 'regular_phase_matchdays_count', 'current_matchday', 'playoff_bracket_generated_at', 'created_at', 'admin_id', 'logo_path', 'is_public'])),
@@ -176,7 +176,7 @@ class TournamentController extends Controller
                         'name' => $player->name,
                         'dni' => $player->dni,
                         'number' => $player->number,
-                        'age' => $player->age,
+                        'birth_date' => $player->birth_date?->toDateString(),
                         'goals' => $player->goals ?? 0,
                         'photo_url' => $player->photo_url,
                     ]),
@@ -241,7 +241,7 @@ class TournamentController extends Controller
             'groups_count' => $this->groupsCountFor($validated),
             'regular_phase_matchdays_count' => $this->regularPhaseMatchdaysCountFor($validated),
             'logo_path' => $request->file('logo_path')?->store('tournaments', 'public'),
-            'is_public' => \Illuminate\Support\Facades\DB::raw('false'),
+            'is_public' => false,
             'admin_id' => $request->user()->id,
         ]);
 
@@ -263,7 +263,7 @@ class TournamentController extends Controller
         $tournament->update([
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
-            'is_public' => \Illuminate\Support\Facades\DB::raw(($validated['is_public'] ?? false) ? 'true' : 'false'),
+            'is_public' => $request->boolean('is_public'),
             'logo_path' => $request->hasFile('logo_path')
                 ? $request->file('logo_path')->store('tournaments', 'public')
                 : $tournament->logo_path,
@@ -375,7 +375,7 @@ class TournamentController extends Controller
             'dni' => $validated['dni'],
             'name' => $validated['name'],
             'number' => $validated['number'],
-            'age' => $validated['age'] ?? null,
+            'birth_date' => $validated['birth_date'] ?? null,
             'goals' => $validated['goals'] ?? 0,
             'photo_path' => $request->file('photo_path')?->store('players', 'public'),
             'team_id' => $team->id,
@@ -540,10 +540,10 @@ class TournamentController extends Controller
                         'id' => $player->id,
                         'name' => $player->name,
                         'number' => $player->number,
-                        'age' => $player->age,
-                    'goals' => $player->goals ?? 0,
-                    'photo_url' => $player->photo_url,
-                ]),
+                        'birth_date' => $player->birth_date?->toDateString(),
+                        'goals' => $player->goals ?? 0,
+                        'photo_url' => $player->photo_url,
+                    ]),
             ]);
     }
 
@@ -555,7 +555,7 @@ class TournamentController extends Controller
                     'id' => $player->id,
                     'name' => $player->name,
                     'number' => $player->number,
-                    'age' => $player->age,
+                    'birth_date' => $player->birth_date?->toDateString(),
                     'goals' => $player->goals ?? 0,
                     'photo_url' => $player->photo_url,
                     'team_name' => $team->name,
@@ -1062,7 +1062,7 @@ class TournamentController extends Controller
                     'name' => $data['nombre'] ?? 'Torneo importado',
                     'description' => ($data['descripcion'] ?? '') ?: null,
                     'format' => $formato->value,
-                    'is_public' => \Illuminate\Support\Facades\DB::raw('false'),
+                    'is_public' => false,
                     'admin_id' => auth()->id(),
                     'code' => rand(100000, 999999),
                 ]);
@@ -1086,7 +1086,7 @@ class TournamentController extends Controller
                     'dni' => $this->resolveUniqueDni($data['dni'] ?? ''),
                     'name' => $data['jugador'] ?? '',
                     'number' => (int) ($data['numero'] ?? 0),
-                    'age' => ($data['edad'] ?? null) ?: null,
+                    'birth_date' => ($data['fecha_nacimiento'] ?? null) ?: null,
                 ]);
 
             } elseif ($tipo === 'partido' && $tournament) {
@@ -1128,13 +1128,13 @@ class TournamentController extends Controller
 
         $handle = fopen('php://temp', 'r+');
 
-        fputcsv($handle, ['tipo', 'nombre', 'descripcion', 'formato', 'equipo', 'jugador', 'dni', 'numero', 'edad', 'jornada', 'equipo_local', 'equipo_visitante', 'goles_local', 'goles_visitante', 'fecha', 'estadio']);
+        fputcsv($handle, ['tipo', 'nombre', 'descripcion', 'formato', 'equipo', 'jugador', 'dni', 'numero', 'fecha_nacimiento', 'jornada', 'equipo_local', 'equipo_visitante', 'goles_local', 'goles_visitante', 'fecha', 'estadio']);
         fputcsv($handle, ['torneo', $tournament->name, $tournament->description ?? '', $tournament->format->value, '', '', '', '', '', '', '', '', '', '', '', '']);
 
         foreach ($tournament->teams as $team) {
             fputcsv($handle, ['equipo', '', '', '', $team->name, '', '', '', '', '', '', '', '', '', '', '']);
             foreach ($team->players as $player) {
-                fputcsv($handle, ['jugador', '', '', '', $team->name, $player->name, $player->dni ?? '', $player->number, $player->age ?? '', '', '', '', '', '', '', '']);
+                fputcsv($handle, ['jugador', '', '', '', $team->name, $player->name, $player->dni ?? '', $player->number, $player->birth_date?->toDateString() ?? '', '', '', '', '', '', '', '']);
             }
         }
 
@@ -1194,7 +1194,7 @@ class TournamentController extends Controller
                     [
                         'dni' => $this->resolveUniqueDni($data['dni'] ?? ''),
                         'number' => (int) ($data['numero'] ?? 0),
-                        'age' => ($data['edad'] ?? null) ?: null,
+                        'birth_date' => ($data['fecha_nacimiento'] ?? null) ?: null,
                     ]
                 );
                 $imported['jugadores']++;

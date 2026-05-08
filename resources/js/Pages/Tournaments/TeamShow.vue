@@ -11,7 +11,7 @@ type TeamPlayer = {
     name: string;
     dni: string;
     number: number;
-    age: number | null;
+    birth_date: string | null;
     goals: number;
     photo_url: string;
 };
@@ -67,7 +67,7 @@ const playerForm = useForm({
     dni: '',
     name: '',
     number: '',
-    age: '',
+    birth_date: '',
     photo_path: null as File | null,
     stay_on_team: true,
 });
@@ -86,6 +86,15 @@ function formatTime(date: string | null) {
     return new Date(date).toLocaleTimeString('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
+    });
+}
+
+function formatBirthDate(date: string | null) {
+    if (!date) return 'Fecha de nacimiento no registrada';
+    return new Date(`${date}T00:00:00`).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
     });
 }
 
@@ -262,7 +271,7 @@ function submitPlayer() {
                                             </span>
                                         </div>
                                         <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                            DNI {{ player.dni }} - {{ player.age ? `${player.age} años` : 'Edad no registrada' }}
+                                            DNI {{ player.dni }} - {{ formatBirthDate(player.birth_date) }}
                                         </p>
                                         <p class="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                                             {{ player.goals }} gol{{ player.goals === 1 ? '' : 'es' }} acumulado{{ player.goals === 1 ? '' : 's' }}
@@ -382,15 +391,13 @@ function submitPlayer() {
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-sm text-slate-400">Edad</label>
+                        <label class="mb-1 block text-sm text-slate-400">Fecha de nacimiento</label>
                         <input
-                            v-model="playerForm.age"
-                            type="number"
-                            min="1"
-                            max="99"
+                            v-model="playerForm.birth_date"
+                            type="date"
                             class="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-futbolix-green focus:outline-none"
                         >
-                        <p v-if="playerForm.errors.age" class="mt-1 text-xs text-red-400">{{ playerForm.errors.age }}</p>
+                        <p v-if="playerForm.errors.birth_date" class="mt-1 text-xs text-red-400">{{ playerForm.errors.birth_date }}</p>
                     </div>
 
                     <div class="lg:col-span-2">

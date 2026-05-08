@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('name');
             $table->string('badge')->nullable();
             $table->foreignId('tournament_id')->constrained();
+            $table->unsignedInteger('position')->nullable();
+            $table->unsignedInteger('played')->default(0);
+            $table->unsignedInteger('won')->default(0);
+            $table->unsignedInteger('drawn')->default(0);
+            $table->unsignedInteger('lost')->default(0);
+            $table->unsignedInteger('goals_for')->default(0);
+            $table->unsignedInteger('goals_against')->default(0);
+            $table->integer('goal_difference')->default(0);
+            $table->unsignedInteger('points')->default(0);
             $table->timestamps();
         });
     }

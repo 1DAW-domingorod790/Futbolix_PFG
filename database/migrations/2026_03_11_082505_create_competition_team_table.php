@@ -23,6 +23,13 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
+            $table->unsignedInteger('standing')->nullable();
+            $table->unsignedInteger('points')->nullable();
+            $table->unsignedInteger('won')->nullable();
+            $table->unsignedInteger('draw')->nullable();
+            $table->unsignedInteger('lost')->nullable();
+            $table->integer('goal_difference')->nullable();
+
             $table->unique(['competition_id','team_id']);
 
         });

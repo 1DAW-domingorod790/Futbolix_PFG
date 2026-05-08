@@ -29,7 +29,7 @@ type BracketRound = { id: number; name: string; round_number: number; matches_co
 type MatchScorer = { player_id: number; goals: number };
 type MatchTeam = { id: number | null; name: string | null; badge: string | null; players: PlayerItem[] };
 type MatchItem = { id: number; matchday: number | null; scheduled_at: string | null; venue: string | null; status: string | null; home_score: number | null; away_score: number | null; home_scorers: MatchScorer[]; away_scorers: MatchScorer[]; home_team: MatchTeam; away_team: MatchTeam };
-type TopScorer = { id: number; name: string; number: number; age: number | null; goals: number; photo_url: string; team_name: string };
+type TopScorer = { id: number; name: string; number: number; birth_date: string | null; goals: number; photo_url: string; team_name: string };
 type TournamentDetail = {
     id: number;
     code: number;
@@ -133,6 +133,11 @@ function formatDate(date: string | null) {
     return new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
+function formatBirthDate(date: string | null) {
+    if (!date) return 'Fecha de nacimiento no registrada';
+    return new Date(`${date}T00:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
 function teamInitials(name: string | null) {
     if (!name) return 'EQ';
     return name.split(' ').filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
@@ -143,7 +148,7 @@ function goalDifferenceLabel(value: number) {
 }
 
 function saveSettings() {
-    settingsForm.transform((data) => ({ ...data, is_public: data.is_public ? 1 : 0 })).patch(
+    settingsForm.transform((data) => ({ ...data, _method: 'PATCH', is_public: data.is_public ? 1 : 0 })).post(
         route('tournaments.update', props.tournament.id),
         { forceFormData: true, preserveScroll: true },
     );
@@ -679,7 +684,7 @@ watch(expectedFirstRoundMatches, () => {
                                     <div class="flex min-w-0 items-center gap-4">
                                         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-futbolix-green/10 text-base font-bold text-futbolix-green">{{ index + 1 }}</div>
                                         <img :src="scorer.photo_url" :alt="scorer.name" class="h-14 w-14 rounded-full object-cover">
-                                        <div class="min-w-0"><p class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ scorer.name }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.team_name }} - Dorsal {{ scorer.number }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.age ? `${scorer.age} años` : 'Edad no registrada' }}</p></div>
+                                        <div class="min-w-0"><p class="truncate text-base font-semibold text-slate-900 dark:text-white">{{ scorer.name }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ scorer.team_name }} - Dorsal {{ scorer.number }}</p><p class="text-sm text-slate-500 dark:text-slate-400">{{ formatBirthDate(scorer.birth_date) }}</p></div>
                                     </div>
                                     <span class="inline-flex items-center rounded-full bg-futbolix-gold/15 px-3 py-1 text-sm font-semibold text-futbolix-gold">{{ scorer.goals }} goles</span>
                                 </div>

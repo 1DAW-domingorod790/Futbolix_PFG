@@ -19,6 +19,8 @@ return new class extends Migration
             $table->unsignedSmallInteger('position');
             $table->foreignId('home_team_id')->nullable()->constrained('tournament_teams')->nullOnDelete();
             $table->foreignId('away_team_id')->nullable()->constrained('tournament_teams')->nullOnDelete();
+            $table->unsignedTinyInteger('home_score')->nullable();
+            $table->unsignedTinyInteger('away_score')->nullable();
             $table->foreignId('winner_team_id')->nullable()->constrained('tournament_teams')->nullOnDelete();
             $table->foreignId('next_match_id')->nullable()->constrained('playoff_matches')->nullOnDelete();
             $table->string('status')->default('pending');

@@ -62,9 +62,9 @@ class TournamentSeeder extends Seeder
                 'goal_difference' => 2,
                 'points' => 3,
                 'players' => [
-                    ['dni' => '85644963P', 'name' => 'Carmelix Villarreal', 'number' => 8, 'age' => 24, 'goals' => 2],
-                    ['dni' => '79044463B', 'name' => 'Domingix Rodriguez', 'number' => 10, 'age' => 20, 'goals' => 1],
-                    ['dni' => '51234567L', 'name' => 'Jose Mari Rojas', 'number' => 1, 'age' => 29, 'goals' => 0],
+                    ['dni' => '85644963P', 'name' => 'Carmelix Villarreal', 'number' => 8, 'birth_date' => '2002-04-15', 'goals' => 2],
+                    ['dni' => '79044463B', 'name' => 'Domingix Rodriguez', 'number' => 10, 'birth_date' => '2006-01-23', 'goals' => 1],
+                    ['dni' => '51234567L', 'name' => 'Jose Mari Rojas', 'number' => 1, 'birth_date' => '1997-09-08', 'goals' => 0],
                 ],
             ],
             [
@@ -80,9 +80,9 @@ class TournamentSeeder extends Seeder
                 'goal_difference' => 0,
                 'points' => 1,
                 'players' => [
-                    ['dni' => '62345678M', 'name' => 'Adrian Campos', 'number' => 9, 'age' => 22, 'goals' => 1],
-                    ['dni' => '63456789N', 'name' => 'Pedro Luque', 'number' => 6, 'age' => 27, 'goals' => 1],
-                    ['dni' => '64567890Q', 'name' => 'Ruben Mena', 'number' => 13, 'age' => 31, 'goals' => 0],
+                    ['dni' => '62345678M', 'name' => 'Adrian Campos', 'number' => 9, 'birth_date' => '2004-07-11', 'goals' => 1],
+                    ['dni' => '63456789N', 'name' => 'Pedro Luque', 'number' => 6, 'birth_date' => '1999-02-04', 'goals' => 1],
+                    ['dni' => '64567890Q', 'name' => 'Ruben Mena', 'number' => 13, 'birth_date' => '1995-12-19', 'goals' => 0],
                 ],
             ],
             [
@@ -98,9 +98,9 @@ class TournamentSeeder extends Seeder
                 'goal_difference' => 0,
                 'points' => 1,
                 'players' => [
-                    ['dni' => '65678901R', 'name' => 'Antonio Moya', 'number' => 11, 'age' => 23, 'goals' => 1],
-                    ['dni' => '66789012S', 'name' => 'Fran Pulido', 'number' => 7, 'age' => 25, 'goals' => 1],
-                    ['dni' => '67890123T', 'name' => 'Miguel Torres', 'number' => 4, 'age' => 28, 'goals' => 0],
+                    ['dni' => '65678901R', 'name' => 'Antonio Moya', 'number' => 11, 'birth_date' => '2003-10-30', 'goals' => 1],
+                    ['dni' => '66789012S', 'name' => 'Fran Pulido', 'number' => 7, 'birth_date' => '2001-03-17', 'goals' => 1],
+                    ['dni' => '67890123T', 'name' => 'Miguel Torres', 'number' => 4, 'birth_date' => '1998-06-02', 'goals' => 0],
                 ],
             ],
             [
@@ -116,9 +116,9 @@ class TournamentSeeder extends Seeder
                 'goal_difference' => -2,
                 'points' => 0,
                 'players' => [
-                    ['dni' => '68901234V', 'name' => 'Sergio Vela', 'number' => 17, 'age' => 21, 'goals' => 1],
-                    ['dni' => '69012345W', 'name' => 'Ismael Rey', 'number' => 5, 'age' => 30, 'goals' => 0],
-                    ['dni' => '70123456X', 'name' => 'David Prieto', 'number' => 12, 'age' => 26, 'goals' => 0],
+                    ['dni' => '68901234V', 'name' => 'Sergio Vela', 'number' => 17, 'birth_date' => '2005-08-24', 'goals' => 1],
+                    ['dni' => '69012345W', 'name' => 'Ismael Rey', 'number' => 5, 'birth_date' => '1996-11-06', 'goals' => 0],
+                    ['dni' => '70123456X', 'name' => 'David Prieto', 'number' => 12, 'birth_date' => '2000-05-21', 'goals' => 0],
                 ],
             ],
         ])->mapWithKeys(function (array $teamData) use ($tournament) {
@@ -146,7 +146,7 @@ class TournamentSeeder extends Seeder
                     [
                         'name' => $playerData['name'],
                         'number' => $playerData['number'],
-                        'age' => $playerData['age'],
+                        'birth_date' => $playerData['birth_date'],
                         'goals' => $playerData['goals'],
                         'team_id' => $team->id,
                     ]
