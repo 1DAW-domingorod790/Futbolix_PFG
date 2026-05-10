@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -28,6 +27,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const updateProfile = { url: '/settings/profile', method: 'patch' };
 </script>
 
 <template>
@@ -45,7 +45,7 @@ const user = computed(() => page.props.auth.user);
                 />
 
                 <Form
-                    v-bind="ProfileController.update.form()"
+                    v-bind="updateProfile"
                     class="space-y-6"
                     v-slot="{ errors, processing, recentlySuccessful }"
                 >
