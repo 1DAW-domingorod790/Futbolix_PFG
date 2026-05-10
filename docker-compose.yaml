@@ -6,12 +6,16 @@ services:
     container_name: futbolix_app
     restart: unless-stopped
     working_dir: /var/www/html
+    command: sh -c "chown -R www-data:www-data storage bootstrap/cache && php-fpm"
     volumes:
       - ./:/var/www/html
       - /var/www/html/vendor
       - /var/www/html/node_modules
     depends_on:
-      - db
+      db:
+        condition: service_started
+      vite:
+        condition: service_healthy
     networks:
       - futbolix_network
 
@@ -65,12 +69,17 @@ services:
     image: node:22-alpine
     container_name: futbolix_vite
     working_dir: /var/www/html
-    command: sh -c "npm install && npm run build && npm run dev -- --host 0.0.0.0"
+    command: sh -c "rm -rf public/build public/hot && npm install && npm run build && rm -f public/hot && tail -f /dev/null"
     ports:
       - "5173:5173"
     volumes:
       - ./:/var/www/html
       - /var/www/html/node_modules
+    healthcheck:
+      test: ["CMD", "test", "-f", "public/build/manifest.json"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - futbolix_network
 
