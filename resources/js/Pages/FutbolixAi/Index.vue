@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Bot, Loader2, MessageSquare, Plus, Send, Sparkles, Trash2, UserRound, Zap } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, ref } from 'vue';
@@ -275,6 +275,10 @@ onMounted(async () => {
                                 />
                             </div>
                         </div>
+                        <Link href="/futbolix-ai/plans" class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border border-futbolix-green/30 bg-futbolix-green/10 px-4 py-3 text-sm font-semibold text-futbolix-green transition hover:bg-futbolix-green hover:text-white">
+                            <Zap class="h-4 w-4" />
+                            Mejorar plan
+                        </Link>
                     </div>
 
                     <div class="min-h-0 flex-1 overflow-y-auto p-3">

@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Tournaments\PlayoffController;
 use App\Http\Controllers\Tournaments\TournamentController;
+use App\Http\Controllers\Ai\AiPlanPageController;
+use App\Http\Controllers\Ai\UpgradePlanController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -50,6 +52,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/futbolix-ai/plans', AiPlanPageController::class)->name('futbolix-ai.plans');
+    Route::post('/futbolix-ai/upgrade', UpgradePlanController::class)->name('futbolix-ai.upgrade');
     Route::get('/futbolix-ai', FutbolixAiPageController::class)->name('futbolix-ai.index');
     Route::get('/api/futbolix-ai/conversations', [AiConversationController::class, 'index'])->name('futbolix-ai.conversations.index');
     Route::post('/api/futbolix-ai/conversations', [AiConversationController::class, 'store'])->name('futbolix-ai.conversations.store');
