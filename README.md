@@ -269,36 +269,3 @@ docker compose exec app php artisan app:sync-all
 ```
 
 Este paso requiere que `FOOTBALL_DATA_ORG_API_KEY` este configurada en `.env`.
-
-### Comandos utiles
-
-Ver contenedores:
-
-```bash
-docker compose ps
-```
-
-Ver logs:
-
-```bash
-docker compose logs -f
-```
-
-Parar la aplicacion:
-
-```bash
-docker compose down
-```
-
-Parar y eliminar contenedores huerfanos:
-
-```bash
-docker compose down --remove-orphans
-```
-
-Recompilar el frontend:
-
-```bash
-docker compose run --rm vite sh -c "npm install && npm run build"
-```
-
