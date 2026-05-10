@@ -10,7 +10,6 @@ import {
     InputOTPSlot,
 } from '@/components/ui/input-otp';
 import AuthLayout from '@/layouts/AuthLayout.vue';
-import { store } from '@/routes/two-factor/login';
 import type { TwoFactorConfigContent } from '@/types';
 
 const authConfigContent = computed<TwoFactorConfigContent>(() => {
@@ -32,6 +31,7 @@ const authConfigContent = computed<TwoFactorConfigContent>(() => {
 });
 
 const showRecoveryInput = ref<boolean>(false);
+const twoFactorLogin = { url: '/two-factor-challenge', method: 'post' };
 
 const toggleRecoveryMode = (clearErrors: () => void): void => {
     showRecoveryInput.value = !showRecoveryInput.value;
@@ -52,7 +52,7 @@ const code = ref<string>('');
         <div class="space-y-6">
             <template v-if="!showRecoveryInput">
                 <Form
-                    v-bind="store.form()"
+                    v-bind="twoFactorLogin"
                     class="space-y-4"
                     reset-on-error
                     @error="code = ''"
@@ -99,7 +99,7 @@ const code = ref<string>('');
 
             <template v-else>
                 <Form
-                    v-bind="store.form()"
+                    v-bind="twoFactorLogin"
                     class="space-y-4"
                     reset-on-error
                     #default="{ errors, processing, clearErrors }"
